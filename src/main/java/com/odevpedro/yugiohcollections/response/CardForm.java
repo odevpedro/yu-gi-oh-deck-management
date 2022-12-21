@@ -50,4 +50,5 @@ public class CardForm {
         this.atribute = atribute;
         this.effect = effect;
     }
+
 }
