@@ -1,0 +1,23 @@
+{
+  "namespace": "com.yugioh.events",
+  "type": "record",
+  "name": "CardFavoritedEvent",
+  "doc": "Evento emitido quando uma carta é adicionada aos favoritos",
+  "fields": [
+    {
+      "name": "cardId",
+      "type": "string",
+      "doc": "Identificador único da carta"
+    },
+    {
+      "name": "userId",
+      "type": "string",
+      "doc": "Identificador do usuário que favoritou a carta"
+    },
+    {
+      "name": "favoritedAt",
+      "type": "string",
+      "doc": "Data em que a carta foi favoritada (ISO 8601)"
+    }
+  ]
+}

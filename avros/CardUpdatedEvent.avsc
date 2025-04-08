@@ -1,0 +1,23 @@
+{
+  "namespace": "com.yugioh.events",
+  "type": "record",
+  "name": "CardUpdatedEvent",
+  "doc": "Evento emitido quando uma carta custom é atualizada",
+  "fields": [
+    {
+      "name": "cardId",
+      "type": "string",
+      "doc": "Identificador único da carta"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "doc": "Nome atualizado da carta"
+    },
+    {
+      "name": "updatedAt",
+      "type": "string",
+      "doc": "Data da atualização (ISO 8601)"
+    }
+  ]
+}

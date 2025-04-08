@@ -1,0 +1,23 @@
+{
+  "namespace": "com.yugioh.events",
+  "type": "record",
+  "name": "CardCreatedEvent",
+  "doc": "Evento emitido quando uma carta custom é criada",
+  "fields": [
+    {
+      "name": "cardId",
+      "type": "string",
+      "doc": "Identificador único da carta"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "doc": "Nome da carta"
+    },
+    {
+      "name": "createdAt",
+      "type": "string",
+      "doc": "Data de criação da carta (ISO 8601)"
+    }
+  ]
+}
