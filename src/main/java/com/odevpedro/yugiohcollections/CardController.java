@@ -3,7 +3,7 @@ package com.odevpedro.yugiohcollections;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.odevpedro.yugiohcollections.model.Card;
+import com.odevpedro.yugiohcollections.domain.model.Card;
 import com.odevpedro.yugiohcollections.response.CardForm;
 import com.odevpedro.yugiohcollections.service.CardService;
 import org.springframework.beans.BeanUtils;
@@ -18,6 +18,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/cards")
 public class CardController {
+
+    private final String YGO_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php?name=";
     private final CardService cardService;
 
     private final  RestTemplate restTemplate;
@@ -35,8 +37,7 @@ public class CardController {
     @PostMapping
     public ResponseEntity<Object> addCarta(@PathVariable String name) throws JsonProcessingException, Throwable {
 
-        String url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?name=" + name;
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity(YGO_URL+name, String.class);
         String json = response.getBody();
 
         // Analisa a resposta da API e cria uma nova instância de Carta com as informações relevantes
