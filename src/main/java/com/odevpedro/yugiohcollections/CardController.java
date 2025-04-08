@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class CardController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> addCarta(@PathVariable String name) throws JsonProcessingException {
+    public ResponseEntity<Object> addCarta(@PathVariable String name) throws JsonProcessingException, Throwable {
 
         String url = "https://db.ygoprodeck.com/api/v7/cardinfo.php?name=" + name;
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
