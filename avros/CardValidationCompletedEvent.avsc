@@ -1,0 +1,32 @@
+{
+  "namespace": "com.yugioh.events",
+  "type": "record",
+  "name": "CardValidationCompletedEvent",
+  "doc": "Evento emitido quando a validação de uma carta é concluída",
+  "fields": [
+    {
+      "name": "cardId",
+      "type": "string",
+      "doc": "Identificador único da carta validada"
+    },
+    {
+      "name": "isValid",
+      "type": "boolean",
+      "doc": "Resultado da validação (true se válida, false caso contrário)"
+    },
+    {
+      "name": "message",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "doc": "Mensagem adicional, se houver, explicando a validação"
+    },
+    {
+      "name": "validatedAt",
+      "type": "string",
+      "doc": "Data em que a validação ocorreu (ISO 8601)"
+    }
+  ]
+}

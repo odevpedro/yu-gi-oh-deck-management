@@ -1,0 +1,24 @@
+{
+  "namespace": "com.yugioh.events",
+  "type": "record",
+  "name": "DeckCreatedEvent",
+  "doc": "Evento emitido quando um deck é criado",
+  "fields": [
+    {
+      "name": "deckId",
+      "type": "string",
+      "doc": "Identificador único do deck"
+    },
+    {
+      "name": "userId",
+      "type": "string",
+      "doc": "Identificador do usuário que criou o deck"
+    },
+    {
+      "name": "createdAt",
+      "type": "string",
+      "doc": "Data de criação do deck (ISO 8601)"
+    }
+  ]
+}
+

@@ -1,10 +1,11 @@
 package com.odevpedro.yugiohcollections.model;
 
 import jakarta.persistence.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 
-public class Card {
+public abstract class  Card {
 
     public void setId(Long id) {
         this.id = id;
@@ -20,14 +21,15 @@ public class Card {
     @Column(name = "type")
     private String type;
 
-    @Column(name = "atribtue")
-    private String atribtue;
+    @Column(name = "description")
+    private String description;
 
-    @Column(name = "effect")
-    private String effect;
+    @Column(name = "race")
+    private String race;
 
+    @Column(name = "image")
+    private MultipartFile image;
 
-    //constructor
 
 
     public Card( String name, String type, String atribtue, String effect) {

@@ -1,0 +1,18 @@
+{
+  "namespace": "com.yugioh.events",
+  "type": "record",
+  "name": "DeckPublishedEvent",
+  "doc": "Evento emitido quando um deck é publicado",
+  "fields": [
+    {
+      "name": "deckId",
+      "type": "string",
+      "doc": "Identificador único do deck"
+    },
+    {
+      "name": "publishedAt",
+      "type": "string",
+      "doc": "Data de publicação do deck (ISO 8601)"
+    }
+  ]
+}
