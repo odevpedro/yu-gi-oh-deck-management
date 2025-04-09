@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class YgoProApiClient implements CardSearchPort {
 
-    
+
     private final YgoProFeignClient client;
     private final ObjectMapper objectMapper;
 
