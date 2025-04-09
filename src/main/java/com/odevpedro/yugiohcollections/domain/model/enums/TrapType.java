@@ -1,4 +1,4 @@
-package com.odevpedro.yugiohcollections.model.abstracts.enums.trap;
+package com.odevpedro.yugiohcollections.domain.model.enums;
 
 public enum TrapType {
     NORMAL, CONTINUOUS, COUNTER

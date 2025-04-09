@@ -1,20 +1,20 @@
 package com.odevpedro.yugiohcollections.domain.model;
 
 import com.odevpedro.yugiohcollections.domain.model.enums.CardType;
-import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
 
-@Entity
-
+@Getter
+@AllArgsConstructor
+@ToString
 public abstract class  Card {
 
-    private Long id;
-    private String name;
-    private String description;
-    private String archetype;
-    private CardType type; // MONSTER, SPELL, TRAP
-    private String imageUrl;
-
-
-
+    protected final  Long id;
+    protected final  String name;
+    protected final  String description;
+    protected final  String archetype;
+    protected final  CardType type;
+    protected final  String imageUrl;
 
 }
