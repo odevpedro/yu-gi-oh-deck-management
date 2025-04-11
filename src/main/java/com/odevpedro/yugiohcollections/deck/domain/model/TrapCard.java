@@ -12,8 +12,8 @@ public class TrapCard extends Card {
     private final TrapType trapType;
 
     public TrapCard(Long id, String name, String description, String archetype,
-                    String imageUrl, TrapType trapType) {
-        super(id, name, description, archetype, CardType.TRAP, imageUrl);
+                    CardType type, String imageUrl, TrapType trapType) {
+        super(id, name, description, archetype, type, imageUrl);
         this.trapType = trapType;
     }
 
@@ -27,6 +27,6 @@ public class TrapCard extends Card {
         return Optional.ofNullable(name)
                 .filter(n -> !n.isBlank())
                 .filter(n -> trapType != null)
-                .map(n -> new TrapCard(id, name, description, archetype, imageUrl, trapType));
+                .map(n -> new TrapCard(id, name, description, archetype, CardType.TRAP, imageUrl, trapType));
     }
 }

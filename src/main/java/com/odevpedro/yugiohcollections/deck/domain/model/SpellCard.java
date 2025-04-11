@@ -9,8 +9,9 @@ public class SpellCard extends Card {
 
     private final SpellType spellType;
 
-    private SpellCard(Long id, String name, String description, String archetype, String imageUrl, SpellType spellType) {
-        super(id, name, description, archetype, CardType.SPELL, imageUrl);
+    public SpellCard(Long id, String name, String description, String archetype,
+                     CardType type, String imageUrl, SpellType spellType) {
+        super(id, name, description, archetype, type, imageUrl);
         this.spellType = spellType;
     }
 
@@ -20,7 +21,7 @@ public class SpellCard extends Card {
         return Optional.ofNullable(name)
                 .filter(n -> !n.isBlank())
                 .filter(n -> spellType != null)
-                .map(n -> new SpellCard(id, name, description, archetype, imageUrl, spellType));
+                .map(n -> new SpellCard(id, name, description, archetype, CardType.SPELL, imageUrl, spellType));
     }
 
     public SpellType getSpellType() { return spellType; }
