@@ -1,9 +1,7 @@
 package com.odevpedro.yugiohcollections.deck.adapter.out.persistance.entity;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.CardType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,13 +13,14 @@ import lombok.Setter;
 public abstract class CardJpaEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String name;
     private String description;
     private String archetype;
     @Enumerated(EnumType.STRING)
-    private com.odevpedro.yugiohcollections.card.domain.model.enums.CardType type;
+    private CardType type;
     private String imageUrl;
 
 }

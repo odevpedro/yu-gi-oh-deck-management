@@ -1,15 +1,13 @@
 package com.odevpedro.yugiohcollections.deck.domain.model;
 
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.CardType;
 import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterAttribute;
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterSubType;
 import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterType;
 
 import java.util.Optional;
 import java.util.Set;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterSubType;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 public class MonsterCard extends Card {

@@ -1,5 +1,7 @@
 package com.odevpedro.yugiohcollections.deck.domain.model;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.CardType;
+
 public abstract class Card {
 
     protected final Long id;

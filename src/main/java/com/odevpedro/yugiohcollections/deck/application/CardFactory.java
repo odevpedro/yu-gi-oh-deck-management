@@ -1,19 +1,16 @@
 package com.odevpedro.yugiohcollections.deck.application;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.odevpedro.yugiohcollections.deck.application.dto.CardInputDTO;
 import com.odevpedro.yugiohcollections.deck.domain.model.Card;
 import com.odevpedro.yugiohcollections.deck.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.deck.domain.model.SpellCard;
 import com.odevpedro.yugiohcollections.deck.domain.model.TrapCard;
-import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterAttribute;
-import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterType;
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.*;
 
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterSubType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.SpellType;
-import com.odevpedro.yugiohcollections.deck.domain.model.enums.TrapType;
 
 public class CardFactory {
 
@@ -33,6 +30,7 @@ public class CardFactory {
             MonsterType monsterType = MonsterType.valueOf(normalize(node.get("race").asText()));
             Set<MonsterSubType> subTypes = detectMonsterSubtypes(type);
 
+            //cria e faz um cast pro tipo mais abstrato
             return MonsterCard.create(id, name, desc, archetype, image, atk, def, level, attr, monsterType, subTypes)
                     .map(c -> (Card) c);
         }
@@ -45,7 +43,7 @@ public class CardFactory {
         if (type.contains("Trap")) {
             TrapType trapType = TrapType.valueOf(normalize(node.get("race").asText()));
             return TrapCard.create(id, name, desc, archetype, image, trapType)
-                    .map(card -> card); // ✅ ou .map(Function.identity())
+                    .map(card -> card);
         }
 
         return Optional.empty();
@@ -64,5 +62,51 @@ public class CardFactory {
             } catch (IllegalArgumentException ignored) {}
         }
         return set;
+    }
+
+    public static Optional<Card> fromDTO(CardInputDTO dto) {
+        if (dto.getType() == null || dto.getName() == null || dto.getName().isBlank()) {
+            return Optional.empty();
+        }
+
+        if (dto.getType() == CardType.MONSTER) {
+            return MonsterCard.create(
+                    null,
+                    dto.getName(),
+                    dto.getDescription(),
+                    dto.getArchetype(),
+                    dto.getImageUrl(),
+                    dto.getAttack(),
+                    dto.getDefense(),
+                    dto.getLevel(),
+                    dto.getAttribute(),
+                    dto.getMonsterType(),
+                    dto.getSubTypes()
+            ).map(c -> (Card) c);
+        }
+
+        if (dto.getType() == CardType.SPELL) {
+            return SpellCard.create(
+                    null,
+                    dto.getName(),
+                    dto.getDescription(),
+                    dto.getArchetype(),
+                    dto.getImageUrl(),
+                    dto.getSpellType()
+            ).map(c -> (Card) c);
+        }
+
+        if (dto.getType() == CardType.TRAP) {
+            return TrapCard.create(
+                    null,
+                    dto.getName(),
+                    dto.getDescription(),
+                    dto.getArchetype(),
+                    dto.getImageUrl(),
+                    dto.getTrapType()
+            ).map(c -> (Card) c);
+        }
+
+        return Optional.empty();
     }
 }

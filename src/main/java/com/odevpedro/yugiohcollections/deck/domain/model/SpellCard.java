@@ -1,6 +1,8 @@
 package com.odevpedro.yugiohcollections.deck.domain.model;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.SpellType;
+
+
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.CardType;
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.SpellType;
 
 import java.util.Optional;
 

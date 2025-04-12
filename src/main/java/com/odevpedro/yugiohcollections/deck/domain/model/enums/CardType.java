@@ -1,4 +1,4 @@
-package com.odevpedro.yugiohcollections.card.domain.model.enums;
+package com.odevpedro.yugiohcollections.deck.domain.model.enums;
 
 public enum CardType {
     MONSTER, SPELL, TRAP

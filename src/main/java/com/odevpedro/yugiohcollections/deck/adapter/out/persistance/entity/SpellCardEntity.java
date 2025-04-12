@@ -1,5 +1,6 @@
 package com.odevpedro.yugiohcollections.deck.adapter.out.persistance.entity;
 
+import com.odevpedro.yugiohcollections.deck.domain.model.enums.SpellType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,5 +17,5 @@ import lombok.Setter;
 public class SpellCardEntity extends CardJpaEntity {
 
     @Enumerated(EnumType.STRING)
-    private com.odevpedro.yugiohcollections.card.domain.model.enums.SpellType spellType;
+    private SpellType spellType;
 }

@@ -22,7 +22,6 @@ public class ExternalCardController {
 
     @GetMapping("/search")
     public ResponseEntity<List<Card>> searchByName(@RequestParam String name) {
-        // Aqui nós vamos chamar o método da porta
         List<Card> cards = cardSearchPort.searchByName(name);
         return ResponseEntity.ok(cards);
     }
