@@ -9,24 +9,23 @@ import java.util.Optional;
 @Getter
 public class TrapCard extends Card {
 
+    private final String ownerId;
+    @Getter
     private final TrapType trapType;
 
     public TrapCard(Long id, String name, String description, String archetype,
-                    CardType type, String imageUrl, TrapType trapType) {
+                    CardType type, String imageUrl, TrapType trapType, String ownerId) {
         super(id, name, description, archetype, type, imageUrl);
         this.trapType = trapType;
-    }
-
-    public TrapType getTrapType() {
-        return trapType;
+        this.ownerId = ownerId;
     }
 
     public static Optional<TrapCard> create(Long id, String name, String description, String archetype,
-                                            String imageUrl, TrapType trapType) {
+                                            String imageUrl, TrapType trapType, String ownerId) {
 
         return Optional.ofNullable(name)
                 .filter(n -> !n.isBlank())
                 .filter(n -> trapType != null)
-                .map(n -> new TrapCard(id, name, description, archetype, CardType.TRAP, imageUrl, trapType));
+                .map(n -> new TrapCard(id, name, description, archetype, CardType.TRAP, imageUrl, trapType, ownerId));
     }
 }

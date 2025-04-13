@@ -22,6 +22,7 @@ public class CardFactory {
         String archetype = node.has("archetype") ? node.get("archetype").asText() : null;
         String image = node.get("card_images").get(0).get("image_url").asText();
 
+
         if (type.contains("Monster")) {
             int atk = node.path("atk").asInt();
             int def = node.path("def").asInt();
@@ -31,18 +32,18 @@ public class CardFactory {
             Set<MonsterSubType> subTypes = detectMonsterSubtypes(type);
 
             //cria e faz um cast pro tipo mais abstrato
-            return MonsterCard.create(id, name, desc, archetype, image, atk, def, level, attr, monsterType, subTypes)
+            return MonsterCard.create(id, name, desc, archetype, image, atk, def, level, attr, monsterType, subTypes, "external import")
                     .map(c -> (Card) c);
         }
 
         if (type.contains("Spell")) {
             SpellType spellType = SpellType.valueOf(normalize(node.get("race").asText()));
-            return SpellCard.create(id, name, desc, archetype, image, spellType).map(c -> (Card) c);
+            return SpellCard.create(id, name, desc, archetype, image, spellType, "external import").map(c -> (Card) c);
         }
 
         if (type.contains("Trap")) {
             TrapType trapType = TrapType.valueOf(normalize(node.get("race").asText()));
-            return TrapCard.create(id, name, desc, archetype, image, trapType)
+            return TrapCard.create(id, name, desc, archetype, image, trapType,"external import")
                     .map(card -> card);
         }
 
@@ -81,7 +82,8 @@ public class CardFactory {
                     dto.getLevel(),
                     dto.getAttribute(),
                     dto.getMonsterType(),
-                    dto.getSubTypes()
+                    dto.getSubTypes(),
+                    dto.getOwnerId()
             ).map(c -> (Card) c);
         }
 
@@ -92,7 +94,8 @@ public class CardFactory {
                     dto.getDescription(),
                     dto.getArchetype(),
                     dto.getImageUrl(),
-                    dto.getSpellType()
+                    dto.getSpellType(),
+                    dto.getOwnerId()
             ).map(c -> (Card) c);
         }
 
@@ -103,7 +106,8 @@ public class CardFactory {
                     dto.getDescription(),
                     dto.getArchetype(),
                     dto.getImageUrl(),
-                    dto.getTrapType()
+                    dto.getTrapType(),
+                    dto.getOwnerId()
             ).map(c -> (Card) c);
         }
 

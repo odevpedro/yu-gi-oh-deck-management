@@ -11,6 +11,9 @@ import com.odevpedro.yugiohcollections.deck.domain.model.TrapCard;
 import com.odevpedro.yugiohcollections.deck.domain.model.ports.CardPersistencePort;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class CardRepositoryAdapter implements CardPersistencePort {
 
@@ -45,5 +48,28 @@ public class CardRepositoryAdapter implements CardPersistencePort {
             return mapper.toDomain(trapRepo.save(entity));
         }
         throw new UnsupportedOperationException("Tipo de carta não suportado");
+    }
+
+    @Override
+    public List<Card> findAllByOwnerId(String ownerId) {
+        List<Card> all = new ArrayList<>();
+
+        monsterRepo.findAllByOwnerId(ownerId)
+                .stream()
+                .map(mapper::toDomain)
+                .forEach(all::add);
+
+        spellRepo.findAllByOwnerId(ownerId)
+                .stream()
+                .map(mapper::toDomain)
+                .forEach(all::add);
+
+        trapRepo.findAllByOwnerId(ownerId)
+                .stream()
+                .map(mapper::toDomain)
+                .forEach(all::add);
+
+        return all;
+
     }
 }

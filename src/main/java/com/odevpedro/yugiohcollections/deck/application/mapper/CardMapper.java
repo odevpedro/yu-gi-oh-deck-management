@@ -25,6 +25,7 @@ public class CardMapper {
         entity.setAttribute(card.getAttribute());
         entity.setMonsterType(card.getMonsterType());
         entity.setSubTypes(card.getSubTypes());
+        entity.setOwnerId(card.getOwnerId());
         return entity;
     }
 
@@ -41,7 +42,8 @@ public class CardMapper {
                 entity.getLevel(),
                 entity.getAttribute(),
                 entity.getMonsterType(),
-                entity.getSubTypes()
+                entity.getSubTypes(),
+                entity.getOwnerId()
         );
     }
 
@@ -54,6 +56,7 @@ public class CardMapper {
         entity.setType(card.getType());
         entity.setImageUrl(card.getImageUrl());
         entity.setSpellType(card.getSpellType());
+        entity.setOwnerId(card.getOwnerId());
         return entity;
     }
 
@@ -65,7 +68,8 @@ public class CardMapper {
                 entity.getArchetype(),
                 entity.getType(),
                 entity.getImageUrl(),
-                entity.getSpellType()
+                entity.getSpellType(),
+                entity.getOwnerId()
         );
     }
 
@@ -78,6 +82,7 @@ public class CardMapper {
         entity.setType(card.getType());
         entity.setImageUrl(card.getImageUrl());
         entity.setTrapType(card.getTrapType());
+        entity.setOwnerId(card.getOwnerId());
         return entity;
     }
 
@@ -89,7 +94,8 @@ public class CardMapper {
                 entity.getArchetype(),
                 entity.getType(),
                 entity.getImageUrl(),
-                entity.getTrapType()
+                entity.getTrapType(),
+                entity.getOwnerId()
         );
     }
 }

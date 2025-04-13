@@ -17,7 +17,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class MonsterCardEntity extends CardJpaEntity {
 
-
+    @Column(name = "owner_id")
+    private String ownerId;
 
     private int attack;
     private int defense;
@@ -34,4 +35,6 @@ public class MonsterCardEntity extends CardJpaEntity {
     @Column(name = "sub_type")
     @Enumerated(EnumType.STRING)
     private Set<MonsterSubType> subTypes;
+
+
 }

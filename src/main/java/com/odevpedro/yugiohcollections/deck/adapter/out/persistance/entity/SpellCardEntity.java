@@ -1,10 +1,7 @@
 package com.odevpedro.yugiohcollections.deck.adapter.out.persistance.entity;
 
 import com.odevpedro.yugiohcollections.deck.domain.model.enums.SpellType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,4 +15,8 @@ public class SpellCardEntity extends CardJpaEntity {
 
     @Enumerated(EnumType.STRING)
     private SpellType spellType;
+
+    @Column(name = "owner_id")
+    private String ownerId;
+
 }

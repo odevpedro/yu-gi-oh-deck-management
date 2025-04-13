@@ -12,6 +12,8 @@ import java.util.Set;
 @Setter
 public class CardInputDTO {
 
+    private String ownerId;
+
 
     private CardType type;
 

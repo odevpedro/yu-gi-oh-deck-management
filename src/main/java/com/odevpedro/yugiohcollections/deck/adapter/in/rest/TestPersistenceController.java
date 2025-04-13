@@ -38,7 +38,8 @@ public class TestPersistenceController {
                 7,
                 MonsterAttribute.DARK,
                 MonsterType.DRAGON,
-                Set.of(MonsterSubType.NORMAL, MonsterSubType.EFFECT)
+                Set.of(MonsterSubType.NORMAL, MonsterSubType.EFFECT),
+                "user-teste"
         );
 
         var saved = persistencePort.save(carta);
