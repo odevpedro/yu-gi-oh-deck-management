@@ -8,4 +8,6 @@ public interface CardPersistencePort {
     Card save(Card card);
 
     List<Card> findAllByOwnerId(String ownerId);
+
+    List<Card> updateCard();
 }
