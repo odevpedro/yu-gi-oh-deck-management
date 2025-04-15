@@ -4,6 +4,7 @@ import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterAttribute;
 import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterSubType;
 import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterType;
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,8 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "monster_cards")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class MonsterCardEntity extends CardJpaEntity {
 

@@ -7,9 +7,11 @@ import com.odevpedro.yugiohcollections.deck.domain.model.enums.MonsterType;
 
 import java.util.Optional;
 import java.util.Set;
+
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
+@Data
 public class MonsterCard extends Card {
 
     private String ownerId;
