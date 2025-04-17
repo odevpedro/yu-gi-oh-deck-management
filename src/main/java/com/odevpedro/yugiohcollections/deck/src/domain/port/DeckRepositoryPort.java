@@ -14,4 +14,6 @@ public interface DeckRepositoryPort {
     List<Deck> findAllByOwnerId(String ownerId);
 
     void deleteByIdAndOwnerId(Long id, String ownerId);
+
+    Optional<Deck> findByIdAndOwner(Long deckId, String ownerId);
 }
