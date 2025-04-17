@@ -9,6 +9,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -40,8 +41,7 @@ public class CustomCardQueryController {
         return CardFactory.fromDTO(dto)
                 .flatMap(card -> updateCardUseCase.update(id, card))
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Carta não encontrada ou acesso negado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck não encontrado"));
     }
 
     @DeleteMapping("/custom/{id}")

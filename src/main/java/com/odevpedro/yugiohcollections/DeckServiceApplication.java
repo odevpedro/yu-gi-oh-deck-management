@@ -1,4 +1,4 @@
-package com.odevpedro.yugiohcollections.deck.main.java.com.odevpedro.deck.deckservice;
+package com.odevpedro.yugiohcollections;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
