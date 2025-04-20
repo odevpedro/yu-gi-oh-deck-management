@@ -10,6 +10,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.card.domain.model.SpellCard;
 import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.CardPersistencePort;
+import com.odevpedro.yugiohcollections.card.domain.model.ports.CardQueryPort;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class CardRepositoryAdapter implements CardPersistencePort {
+public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort {
 
     private final MonsterCardJpaRepository monsterRepo;
     private final SpellCardJpaRepository spellRepo;
@@ -72,7 +73,6 @@ public class CardRepositoryAdapter implements CardPersistencePort {
                 .forEach(all::add);
 
         return all;
-
     }
 
     @Override
@@ -82,11 +82,11 @@ public class CardRepositoryAdapter implements CardPersistencePort {
                     .filter(e -> e.getOwnerId().equals(monster.getOwnerId()))
                     .map(existing -> {
                         MonsterCardEntity entity = mapper.toEntity(monster);
-                        entity.setId(id);
+                        entity.setId(id); // Força a atualização
                         return mapper.toDomain(monsterRepo.save(entity));
                     });
         }
-        return Optional.empty();
+        return Optional.empty(); // outros tipos não implementados aqui
     }
 
     @Override
@@ -107,5 +107,27 @@ public class CardRepositoryAdapter implements CardPersistencePort {
         }
 
         return Optional.empty(); // Não encontrado ou não autorizado
+    }
+
+    @Override
+    public List<Card> findAllByIds(List<Long> ids) {
+        List<Card> all = new ArrayList<>();
+
+        monsterRepo.findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .forEach(all::add);
+
+        spellRepo.findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .forEach(all::add);
+
+        trapRepo.findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .forEach(all::add);
+
+        return all;
     }
 }

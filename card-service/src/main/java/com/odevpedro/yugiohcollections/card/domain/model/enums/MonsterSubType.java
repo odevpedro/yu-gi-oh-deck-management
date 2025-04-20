@@ -16,6 +16,6 @@ public enum MonsterSubType {
     UNION,
     SPIRIT,
     TOKEN,
-    BIGBANG,       // para futuras implementações
+    BIGBANG,
     ILLUSION
 }
