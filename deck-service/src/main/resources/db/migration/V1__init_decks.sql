@@ -1,7 +1,7 @@
 CREATE TABLE decks (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255),
-    owner_id VARCHAR(255)
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    owner_id VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE deck_entity_main_deck (

@@ -30,9 +30,12 @@ public class DeckRepositoryAdapter implements DeckRepositoryPort {
 
     @Override
     public Optional<Deck> findByIdAndOwnerId(Long id, String ownerId) {
+        System.out.println(ownerId);
         return deckJpaRepository.findByIdAndOwnerId(id, ownerId)
                 .map(deckMapper::toDomain);
+
     }
+
 
     @Override
     public List<Deck> findAllByOwnerId(String ownerId) {

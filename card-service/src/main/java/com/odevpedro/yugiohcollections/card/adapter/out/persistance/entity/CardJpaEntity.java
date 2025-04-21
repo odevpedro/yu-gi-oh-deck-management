@@ -13,14 +13,16 @@ import lombok.Setter;
 public abstract class CardJpaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String description;
     private String archetype;
+    private String imageUrl;
+
     @Enumerated(EnumType.STRING)
     private CardType type;
-    private String imageUrl;
+
 
 }

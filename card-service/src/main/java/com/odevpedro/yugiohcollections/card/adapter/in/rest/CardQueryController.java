@@ -21,8 +21,8 @@ public class CardQueryController {
         this.findCardsByIdsUseCase = findCardsByIdsUseCase;
     }
 
-    @GetMapping("/cards/by-ids")
-    public ResponseEntity<List<CardResponseDTO>> findCardsByIds(@RequestParam List<Long> ids) {
+    @GetMapping("/by-ids")
+    public ResponseEntity<List<CardResponseDTO>> findByIds(@RequestParam List<Long> ids) {
         List<CardResponseDTO> cards = findCardsByIdsUseCase.execute(ids);
         return ResponseEntity.ok(cards);
     }

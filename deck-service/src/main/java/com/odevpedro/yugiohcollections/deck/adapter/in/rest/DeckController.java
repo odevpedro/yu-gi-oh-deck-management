@@ -40,6 +40,7 @@ public class DeckController {
                 .orElse(ResponseEntity.status(404).body("Deck não encontrado ou acesso negado"));
     }
 
+    //aqui só busca por dono
     @GetMapping
     public ResponseEntity<List<Deck>> listByOwner(@RequestParam String ownerId) {
         return ResponseEntity.ok(listDecksByOwnerUseCase.execute(ownerId));
