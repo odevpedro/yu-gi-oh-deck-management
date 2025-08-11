@@ -15,14 +15,16 @@ import java.util.List;
 @RequestMapping("/cards")
 public class CardQueryController {
 
+    //Essa classe só busca aquilo que está definido localmente
+
     private final FindCardsByIdsUseCase findCardsByIdsUseCase;
 
     public CardQueryController(FindCardsByIdsUseCase findCardsByIdsUseCase) {
         this.findCardsByIdsUseCase = findCardsByIdsUseCase;
     }
 
-    @GetMapping("/by-ids")
-    public ResponseEntity<List<CardResponseDTO>> findByIds(@RequestParam List<Long> ids) {
+    @GetMapping
+    public ResponseEntity<List<CardResponseDTO>> findByIds(@RequestParam(required = false) List<Long> ids) {
         List<CardResponseDTO> cards = findCardsByIdsUseCase.execute(ids);
         return ResponseEntity.ok(cards);
     }

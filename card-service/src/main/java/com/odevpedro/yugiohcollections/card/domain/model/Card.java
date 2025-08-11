@@ -1,7 +1,11 @@
 package com.odevpedro.yugiohcollections.card.domain.model;
 
 import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
 public abstract class Card {
 
     protected final Long id;
@@ -11,19 +15,4 @@ public abstract class Card {
     protected final CardType type;
     protected final String imageUrl;
 
-    protected Card(Long id, String name, String description, String archetype, CardType type, String imageUrl) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.archetype = archetype;
-        this.type = type;
-        this.imageUrl = imageUrl;
-    }
-
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getArchetype() { return archetype; }
-    public CardType getType() { return type; }
-    public String getImageUrl() { return imageUrl; }
 }

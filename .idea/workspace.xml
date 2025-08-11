@@ -5,76 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="60ecb86d-0a08-4d69-8c66-784e20516cd0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/DeckServiceApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/Readme.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/YugiohCollectionsApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/in/rest/CustomCardController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/in/rest/CustomCardQueryController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/in/rest/ExternalCardController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/in/rest/TestPersistenceController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/external/YgoProApiClient.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/external/YgoProFeignClient.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/CardJpaRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/CardRepositoryAdapter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/entity/CardJpaEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/entity/MonsterCardEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/entity/SpellCardEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/entity/TrapCardEntity.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/repository/MonsterCardJpaRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/repository/SpellCardJpaRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/adapter/out/persistance/repository/TrapCardJpaRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/CardFactory.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/dto/CardInputDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/mapper/CardMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/service/DeleteCardUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/service/ListCustomCardsUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/service/SaveCardUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/application/service/UpdateCardUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/Card.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/MonsterCard.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/SpellCard.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/TrapCard.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/enums/CardType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/enums/MonsterAttribute.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/enums/MonsterSubType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/enums/MonsterType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/enums/SpellType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/enums/TrapType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/ports/CardPersistencePort.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/card/domain/model/ports/CardSearchPort.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/deck-service.http" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/settings.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/adapter/in/rest/DeckController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/DeckMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/dto/DeckDtoMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/dto/DeckInputDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/dto/DeckOutputDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/dto/DeckWithCardsDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/service/CreateDeckUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/service/DeleteDeckUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/service/FindDeckByIdUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/service/FindDeckWithCardsUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/application/service/ListDecksByOwnerUseCase.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/domain/model/Deck.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/domain/port/DeckRepositoryPort.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/odevpedro/yugiohcollections/deck/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/deck/service/DeckController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/odevpedro/yugiohcollections/YugiohCollectionsApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deck-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/deck-service/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -2420,30 +2352,35 @@
     <option name="showMembers" value="true" />
     <option name="showVisibilityIcons" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Application.DeckServiceApplication.executor": "Run",
-    "Downloaded.Files.Path.Enabled": "false",
-    "Gradle.Build yu-gi-oh-deck-management.executor": "Run",
-    "Gradle.yu-gi-oh-deck-management [:DeckServiceApplication.main()].executor": "Run",
-    "Gradle.yu-gi-oh-deck-management [:YugiohCollectionsApplication.main()].executor": "Run",
-    "Gradle.yu-gi-oh-deck-management [clean build].executor": "Run",
-    "Gradle.yu-gi-oh-deck-management [dependencyManagement].executor": "Run",
-    "Gradle.yu-gi-oh-deck-management [test].executor": "Run",
-    "JUnit.DeckServiceApplicationTests (1).executor": "Run",
-    "JUnit.DeckServiceApplicationTests.contextLoads.executor": "Run",
-    "JUnit.DeckServiceApplicationTests.executor": "Run",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/hope/Documents/desenv/yu-gi-oh-deck-management/card-service",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Application.DeckServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Application.com.odevpedro.yugiohcollections.DeckServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
+    &quot;Gradle.Build yu-gi-oh-deck-management.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.yu-gi-oh-deck-management [:DeckServiceApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.yu-gi-oh-deck-management [:YugiohCollectionsApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.yu-gi-oh-deck-management [clean build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.yu-gi-oh-deck-management [dependencyManagement].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.yu-gi-oh-deck-management [test].executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DeckServiceApplicationTests (1).executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DeckServiceApplicationTests.contextLoads.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DeckServiceApplicationTests.executor&quot;: &quot;Run&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/cliente/Documents/desenv/yu-gi-oh-deck-management&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.odevpedro.yugiohcollections" />
@@ -2475,7 +2412,7 @@
     </configuration>
     <configuration name="com.odevpedro.yugiohcollections.DeckServiceApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.odevpedro.yugiohcollections.DeckServiceApplication" />
-      <module name="yugioh-collections.main" />
+      <module name="yu-gi-oh-deck-management" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.odevpedro.yugiohcollections.*" />

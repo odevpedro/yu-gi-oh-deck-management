@@ -8,7 +8,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterType;
 import java.util.Optional;
 import java.util.Set;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

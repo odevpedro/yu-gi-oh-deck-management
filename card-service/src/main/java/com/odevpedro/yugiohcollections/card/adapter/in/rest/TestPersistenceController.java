@@ -29,7 +29,7 @@ public class TestPersistenceController {
         MonsterCard carta = new MonsterCard(
                 99999999L,
                 "Teste Dragão Sombrio",
-                "Este é um monstro fictício para testar persistência",
+                "Esta é um monstro fictício para testar persistência",
                 "Dark Test Archetype",
                 CardType.MONSTER,
                 "https://imagem.fake.com/dragao.png",

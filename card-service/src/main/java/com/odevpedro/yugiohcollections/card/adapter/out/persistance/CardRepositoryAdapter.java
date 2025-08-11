@@ -106,7 +106,7 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
             return Optional.of(true);
         }
 
-        return Optional.empty(); // Não encontrado ou não autorizado
+        return Optional.empty();
     }
 
     @Override
