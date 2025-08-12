@@ -9,8 +9,11 @@ import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.card.domain.model.SpellCard;
 import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
+import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.CardPersistencePort;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.CardQueryPort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -130,4 +133,13 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
 
         return all;
     }
+
+    @Override
+    public Page<Card> findAllByType(CardType type, Pageable pageable) {
+        return switch (type) {
+            case MONSTER -> monsterRepo.findAll(pageable).map(mapper::toDomain);
+            case SPELL -> spellRepo.findAll(pageable).map(mapper::toDomain);
+            case TRAP -> trapRepo.findAll(pageable).map(mapper::toDomain);
+        };
+        }
 }

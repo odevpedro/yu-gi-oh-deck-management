@@ -1,7 +1,6 @@
 package com.odevpedro.yugiohcollections.card.adapter.in.rest;
 
 import com.odevpedro.yugiohcollections.card.adapter.out.dto.CardResponseDTO;
-import com.odevpedro.yugiohcollections.card.application.dto.CardSimpleResponse;
 import com.odevpedro.yugiohcollections.card.application.service.FindCardsByIdsUseCase;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
