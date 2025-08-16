@@ -7,8 +7,10 @@ import com.odevpedro.yugiohcollections.card.application.service.ListCustomCardsU
 import com.odevpedro.yugiohcollections.card.application.service.SaveCardUseCase;
 import com.odevpedro.yugiohcollections.card.application.service.UpdateCardUseCase;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/cards")
+@AllArgsConstructor
 public class CustomCardQueryController {
 
     private final ListCustomCardsUseCase listCustomCardsUseCase;
@@ -23,14 +26,8 @@ public class CustomCardQueryController {
     private final DeleteCardUseCase deleteCardUseCase;
     private final SaveCardUseCase saveCardUseCase;
 
-    public CustomCardQueryController(ListCustomCardsUseCase listCustomCardsUseCase, UpdateCardUseCase updateCardUseCase, DeleteCardUseCase deleteCardUseCase, SaveCardUseCase saveCardUseCase) {
-        this.listCustomCardsUseCase = listCustomCardsUseCase;
-        this.updateCardUseCase = updateCardUseCase;
-        this.deleteCardUseCase = deleteCardUseCase;
-        this.saveCardUseCase = saveCardUseCase;
-    }
 
-    @GetMapping("/test")
+    @GetMapping("/test/{ownerId}")
     public ResponseEntity<List<Card>> listByOwner(@RequestParam String ownerId) {
         List<Card> cards = listCustomCardsUseCase.findAllByOwner(ownerId);
         return ResponseEntity.ok(cards);
@@ -62,7 +59,7 @@ public class CustomCardQueryController {
 
 
     @PostMapping("/test")
-    public ResponseEntity<Card> createCustomCard(@RequestBody CardInputDTO dto) {
+    public ResponseEntity<Card> createCustomCard(@RequestBody @Validated CardInputDTO dto) {
         Card savedCard = saveCardUseCase.execute(dto);
         return ResponseEntity.ok(savedCard);
     }
