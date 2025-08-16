@@ -19,9 +19,5 @@ public class CustomCardController {
         this.saveCardUseCase = saveCardUseCase;
     }
 
-    @PostMapping("/custom")
-    public ResponseEntity<Card> createCustomCard(@RequestBody CardInputDTO dto) {
-        Card savedCard = saveCardUseCase.execute(dto);
-        return ResponseEntity.ok(savedCard);
-    }
+
 }

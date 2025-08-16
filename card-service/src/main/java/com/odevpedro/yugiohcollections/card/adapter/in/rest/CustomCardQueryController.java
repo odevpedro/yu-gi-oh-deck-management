@@ -4,6 +4,7 @@ import com.odevpedro.yugiohcollections.card.application.CardFactory;
 import com.odevpedro.yugiohcollections.card.application.dto.CardInputDTO;
 import com.odevpedro.yugiohcollections.card.application.service.DeleteCardUseCase;
 import com.odevpedro.yugiohcollections.card.application.service.ListCustomCardsUseCase;
+import com.odevpedro.yugiohcollections.card.application.service.SaveCardUseCase;
 import com.odevpedro.yugiohcollections.card.application.service.UpdateCardUseCase;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import org.springframework.http.HttpStatus;
@@ -20,20 +21,22 @@ public class CustomCardQueryController {
     private final ListCustomCardsUseCase listCustomCardsUseCase;
     private final UpdateCardUseCase updateCardUseCase;
     private final DeleteCardUseCase deleteCardUseCase;
+    private final SaveCardUseCase saveCardUseCase;
 
-    public CustomCardQueryController(ListCustomCardsUseCase listCustomCardsUseCase, UpdateCardUseCase updateCardUseCase, DeleteCardUseCase deleteCardUseCase) {
+    public CustomCardQueryController(ListCustomCardsUseCase listCustomCardsUseCase, UpdateCardUseCase updateCardUseCase, DeleteCardUseCase deleteCardUseCase, SaveCardUseCase saveCardUseCase) {
         this.listCustomCardsUseCase = listCustomCardsUseCase;
         this.updateCardUseCase = updateCardUseCase;
         this.deleteCardUseCase = deleteCardUseCase;
+        this.saveCardUseCase = saveCardUseCase;
     }
 
-    @GetMapping("/custom")
+    @GetMapping("/test")
     public ResponseEntity<List<Card>> listByOwner(@RequestParam String ownerId) {
         List<Card> cards = listCustomCardsUseCase.findAllByOwner(ownerId);
         return ResponseEntity.ok(cards);
     }
 
-    @PutMapping("/custom/{id}")
+    @PutMapping("/test/{id}")
     public ResponseEntity<?> update(
             @PathVariable Long id,
             @RequestBody CardInputDTO dto
@@ -44,7 +47,7 @@ public class CustomCardQueryController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck não encontrado"));
     }
 
-    @DeleteMapping("/custom/{id}")
+    @DeleteMapping("/test{id}")
     public ResponseEntity<?> delete(
             @PathVariable Long id,
             @RequestParam String ownerId
@@ -56,4 +59,12 @@ public class CustomCardQueryController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body("Carta não encontrada ou acesso negado");
     }
+
+
+    @PostMapping("/test")
+    public ResponseEntity<Card> createCustomCard(@RequestBody CardInputDTO dto) {
+        Card savedCard = saveCardUseCase.execute(dto);
+        return ResponseEntity.ok(savedCard);
+    }
+
 }

@@ -6,23 +6,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@MappedSuperclass
 @Getter
 @Setter
 @NoArgsConstructor
+@MappedSuperclass
 public abstract class CardJpaEntity {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // ok para H2
+    @Column(name = "id")
     private Long id;
 
-    private String name;
-    private String description;
-    private String archetype;
-    private String imageUrl;
-
+    @Column(name="name", nullable=false) private String name;
+    @Column(name="description", length=1000) private String description;
+    @Column(name="archetype") private String archetype;
+    @Column(name="image_url") private String imageUrl;
     @Enumerated(EnumType.STRING)
-    private CardType type;
-
-
+    @Column(name="type", nullable=false) private CardType type;
 }
