@@ -28,7 +28,7 @@ public class CustomCardQueryController {
 
 
     @GetMapping("/test/{ownerId}")
-    public ResponseEntity<List<Card>> listByOwner(@RequestParam String ownerId) {
+    public ResponseEntity<List<Card>> listByOwner(@PathVariable String ownerId) {
         List<Card> cards = listCustomCardsUseCase.findAllByOwner(ownerId);
         return ResponseEntity.ok(cards);
     }

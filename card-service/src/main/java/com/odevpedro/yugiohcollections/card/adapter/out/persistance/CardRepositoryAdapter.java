@@ -32,7 +32,8 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
             MonsterCardJpaRepository monsterRepo,
             SpellCardJpaRepository spellRepo,
             TrapCardJpaRepository trapRepo,
-            CardMapper mapper) {
+            CardMapper mapper
+    ) {
         this.monsterRepo = monsterRepo;
         this.spellRepo = spellRepo;
         this.trapRepo = trapRepo;
@@ -41,18 +42,37 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
 
     @Override
     public Card save(Card card) {
-        if (card instanceof MonsterCard monster) {
-            var entity = mapper.toEntity(monster);
-            return mapper.toDomain(monsterRepo.save(entity));
-        }
-        if (card instanceof SpellCard spell) {
-            var entity = mapper.toEntity(spell);
+        if (card instanceof SpellCard s) {
+            // Idempotente: se já existir (ownerId+name+type+spellType), retorna o existente
+            var existing = spellRepo.findByOwnerIdAndNameIgnoreCaseAndTypeAndSpellType(
+                    s.getOwnerId(), s.getName(), s.getType(), s.getSpellType()
+            );
+            if (existing.isPresent()) return mapper.toDomain(existing.get());
+
+            var entity = mapper.toEntity(s);
             return mapper.toDomain(spellRepo.save(entity));
         }
-        if (card instanceof TrapCard trap) {
-            var entity = mapper.toEntity(trap);
+
+        if (card instanceof TrapCard t) {
+            var existing = trapRepo.findByOwnerIdAndNameIgnoreCaseAndTypeAndTrapType(
+                    t.getOwnerId(), t.getName(), t.getType(), t.getTrapType()
+            );
+            if (existing.isPresent()) return mapper.toDomain(existing.get());
+
+            var entity = mapper.toEntity(t);
             return mapper.toDomain(trapRepo.save(entity));
         }
+
+        if (card instanceof MonsterCard m) {
+            var existing = monsterRepo.findByOwnerIdAndNameIgnoreCaseAndType(
+                    m.getOwnerId(), m.getName(), m.getType()
+            );
+            if (existing.isPresent()) return mapper.toDomain(existing.get());
+
+            var entity = mapper.toEntity(m);
+            return mapper.toDomain(monsterRepo.save(entity));
+        }
+
         throw new UnsupportedOperationException("Tipo de carta não suportado");
     }
 
@@ -61,22 +81,43 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
         List<Card> all = new ArrayList<>();
 
         monsterRepo.findAllByOwnerId(ownerId)
-                .stream()
-                .map(mapper::toDomain)
-                .forEach(all::add);
+                .stream().map(mapper::toDomain).forEach(all::add);
 
         spellRepo.findAllByOwnerId(ownerId)
-                .stream()
-                .map(mapper::toDomain)
-                .forEach(all::add);
+                .stream().map(mapper::toDomain).forEach(all::add);
 
         trapRepo.findAllByOwnerId(ownerId)
-                .stream()
-                .map(mapper::toDomain)
-                .forEach(all::add);
+                .stream().map(mapper::toDomain).forEach(all::add);
 
         return all;
     }
+
+    @Override
+    public List<Card> findAllByIds(List<Long> ids) {
+        List<Card> all = new ArrayList<>();
+
+        monsterRepo.findAllById(ids)
+                .stream().map(mapper::toDomain).forEach(all::add);
+
+        spellRepo.findAllById(ids)
+                .stream().map(mapper::toDomain).forEach(all::add);
+
+        trapRepo.findAllById(ids)
+                .stream().map(mapper::toDomain).forEach(all::add);
+
+        return all;
+    }
+
+    @Override
+    public Page<Card> findAllByType(CardType type, Pageable pageable) {
+        return switch (type) {
+            case MONSTER -> monsterRepo.findAll(pageable).map(mapper::toDomain);
+            case SPELL   -> spellRepo.findAll(pageable).map(mapper::toDomain);
+            case TRAP    -> trapRepo.findAll(pageable).map(mapper::toDomain);
+        };
+    }
+
+    // -------------------- Atualização / Exclusão --------------------
 
     @Override
     public Optional<Card> updateCard(Long id, Card updatedCard) {
@@ -89,7 +130,8 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
                         return mapper.toDomain(monsterRepo.save(entity));
                     });
         }
-        return Optional.empty(); // outros tipos não implementados aqui
+        // (poderia implementar Spell/Trap se necessário)
+        return Optional.empty();
     }
 
     @Override
@@ -98,48 +140,14 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
             monsterRepo.deleteById(id);
             return Optional.of(true);
         }
-
         if (spellRepo.findById(id).filter(c -> ownerId.equals(c.getOwnerId())).isPresent()) {
             spellRepo.deleteById(id);
             return Optional.of(true);
         }
-
         if (trapRepo.findById(id).filter(c -> ownerId.equals(c.getOwnerId())).isPresent()) {
             trapRepo.deleteById(id);
             return Optional.of(true);
         }
-
         return Optional.empty();
     }
-
-    @Override
-    public List<Card> findAllByIds(List<Long> ids) {
-        List<Card> all = new ArrayList<>();
-
-        monsterRepo.findAllById(ids)
-                .stream()
-                .map(mapper::toDomain)
-                .forEach(all::add);
-
-        spellRepo.findAllById(ids)
-                .stream()
-                .map(mapper::toDomain)
-                .forEach(all::add);
-
-        trapRepo.findAllById(ids)
-                .stream()
-                .map(mapper::toDomain)
-                .forEach(all::add);
-
-        return all;
-    }
-
-    @Override
-    public Page<Card> findAllByType(CardType type, Pageable pageable) {
-        return switch (type) {
-            case MONSTER -> monsterRepo.findAll(pageable).map(mapper::toDomain);
-            case SPELL -> spellRepo.findAll(pageable).map(mapper::toDomain);
-            case TRAP -> trapRepo.findAll(pageable).map(mapper::toDomain);
-        };
-        }
 }
