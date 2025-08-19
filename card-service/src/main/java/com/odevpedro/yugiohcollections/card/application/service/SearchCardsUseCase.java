@@ -17,10 +17,10 @@ import java.util.List;
 @Service
 public class SearchCardsUseCase {
 
-    private final CardQueryPort cardQueryPort;             // DB local (não usado aqui, mas mantido)
-    private final ExternalCardQueryPort externalQueryPort; // Feign (não usado aqui diretamente)
-    private final CardPersistencePort cardPersistence;     // cache/persist (não usado aqui)
-    private final CardSearchPort cardSearchPort;           // cliente externo consolidado
+    private final CardQueryPort cardQueryPort;
+    private final ExternalCardQueryPort externalQueryPort;
+    private final CardPersistencePort cardPersistence;
+    private final CardSearchPort cardSearchPort;
 
     public SearchCardsUseCase(CardQueryPort cardQueryPort,
                               ExternalCardQueryPort externalQueryPort,
@@ -43,7 +43,7 @@ public class SearchCardsUseCase {
         }
 
         if (hasText(fname) && hasText(type)) {
-            var list = cardSearchPort.searchByFuzzyName(fname); // fuzzy no lugar de exata
+            var list = cardSearchPort.searchByFuzzyName(fname);
             var target = toCardType(type);
             list = list.stream()
                     .filter(c -> c.getType() == target)
@@ -56,17 +56,15 @@ public class SearchCardsUseCase {
             return toPage(mapToDto(list), pageable);
         }
 
-        // 4) só type
+
         if (hasText(type)) {
             List<Card> list = cardSearchPort.searchByType(type);
             return toPage(mapToDto(list), pageable);
         }
 
-        // 5) sem critérios -> vazio
         return Page.empty(pageable);
     }
 
-    /* helpers */
 
     private String sanitize(String s) {
         if (s == null) return null;
