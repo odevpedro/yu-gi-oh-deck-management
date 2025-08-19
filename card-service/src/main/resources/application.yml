@@ -1,0 +1,34 @@
+spring:
+  cache:
+    type: caffeine
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ygopro:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        slowCallDurationThreshold: 2s
+        slowCallRateThreshold: 50
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 6
+  retry:
+    instances:
+      ygopro:
+        maxAttempts: 3
+        waitDuration: 250ms
+        retryExceptions:
+          - feign.RetryableException
+          - feign.FeignException$GatewayTimeout
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+
+# timeouts do Feign (via propriedades HTTP client padrão do Feign/Apache)
+feign:
+  client:
+    config:
+      ygopro-api:              # mesmo 'name' do @FeignClient
+        connectTimeout: 3000
+        readTimeout: 4000

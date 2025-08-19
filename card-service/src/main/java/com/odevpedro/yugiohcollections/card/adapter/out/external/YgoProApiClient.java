@@ -5,13 +5,14 @@ import com.odevpedro.yugiohcollections.card.application.CardFactory;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.CardSearchPort;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static org.hibernate.internal.util.collections.ArrayHelper.slice;
 
 @Component
 public class YgoProApiClient implements CardSearchPort {
@@ -23,6 +24,10 @@ public class YgoProApiClient implements CardSearchPort {
     }
 
     @Override
+    @Cacheable(cacheNames = "cardsByName",
+            key = "T(org.springframework.util.StringUtils).trimAllWhitespace(#name)?.toLowerCase()")
+    @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByName")
+    @Retry(name = "ygopro")
     public List<Card> searchByName(String name) {
         String clean = sanitize(name);
         try {
@@ -34,6 +39,9 @@ public class YgoProApiClient implements CardSearchPort {
     }
 
     @Override
+    @Cacheable(value = "cardsByFuzzy", key = "T(org.springframework.util.StringUtils).trimAllWhitespace(#fname).toLowerCase()")
+    @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByFuzzy")
+    @Retry(name = "ygopro")
     public List<Card> searchByFuzzyName(String fname) {
         String clean = sanitize(fname);
         try {
@@ -45,6 +53,9 @@ public class YgoProApiClient implements CardSearchPort {
     }
 
     @Override
+    @Cacheable(value = "cardsByType", key = "T(java.util.Locale).ROOT, #type == null ? 'null' : #type.toLowerCase()")
+    @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByType")
+    @Retry(name = "ygopro")
     public List<Card> searchByType(String type) {
         String externalType = toExternalType(type); // "Spell Card" | "Trap Card" | "Effect Monster"
         if (externalType == null) return List.of();
@@ -57,6 +68,10 @@ public class YgoProApiClient implements CardSearchPort {
     }
 
     @Override
+    @Cacheable(value = "cardsByTypeRace",
+            key = "((#type==null)?'':#type.toLowerCase()) + '|' + ((#race==null)?'':#race.toLowerCase())")
+    @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByTypeRace")
+    @Retry(name = "ygopro")
     public List<Card> searchByTypeAndRace(String type, String race) {
         String externalType = toExternalType(type);
         String externalRace = normalizeRace(race);
@@ -69,7 +84,13 @@ public class YgoProApiClient implements CardSearchPort {
         }
     }
 
-    /* ===================== Helpers ===================== */
+
+    /* ======== FALLBACKS (mesma assinatura + Exception) ======== */
+    private List<Card> fallbackByName(String name, Throwable t) { return List.of(); }
+    private List<Card> fallbackByFuzzy(String fname, Throwable t) { return List.of(); }
+    private List<Card> fallbackByType(String type, Throwable t) { return List.of(); }
+    private List<Card> fallbackByTypeRace(String type, String race, Throwable t) { return List.of(); }
+
 
     private List<Card> mapData(JsonNode root) {
         List<Card> cards = new ArrayList<>();
