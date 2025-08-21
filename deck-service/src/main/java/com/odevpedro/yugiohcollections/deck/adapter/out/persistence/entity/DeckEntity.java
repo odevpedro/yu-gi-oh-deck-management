@@ -1,40 +1,39 @@
 package com.odevpedro.yugiohcollections.deck.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "decks")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class DeckEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
-    @Column(name = "owner_id")
+    @Column(nullable = false)
     private String ownerId;
 
-    @ElementCollection
-    @CollectionTable(name = "deck_entity_main_deck", joinColumns = @JoinColumn(name = "deck_entity_id"))
-    @Column(name = "main_deck")
-    private List<Long> mainDeck;
+    @Column(nullable = false)
+    private String name;
 
-    @ElementCollection
-    @CollectionTable(name = "deck_entity_extra_deck", joinColumns = @JoinColumn(name = "deck_entity_id"))
-    @Column(name = "extra_deck")
-    private List<Long> extraDeck;
+    @OneToMany(mappedBy = "deck", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeckCardEntryEntity> entries = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "deck_entity_side_deck", joinColumns = @JoinColumn(name = "deck_entity_id"))
-    @Column(name = "side_deck")
-    private List<Long> sideDeck;
+    /** Helper para manter o vínculo bidirecional */
+    public void addEntry(DeckCardEntryEntity entry) {
+        entry.setDeck(this);
+        this.entries.add(entry);
+    }
+
+    public void removeEntry(DeckCardEntryEntity entry) {
+        this.entries.remove(entry);
+        entry.setDeck(null);
+}
 }

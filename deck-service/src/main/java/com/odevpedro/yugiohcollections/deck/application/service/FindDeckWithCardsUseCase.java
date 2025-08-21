@@ -5,20 +5,17 @@ import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardResponseDTO
 import com.odevpedro.yugiohcollections.deck.application.dto.DeckWithCardsDTO;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import com.odevpedro.yugiohcollections.deck.domain.port.DeckRepositoryPort;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class FindDeckWithCardsUseCase {
 
     private final DeckRepositoryPort repository;
     private final CardFeignClient cardFeignClient;
-
-    public FindDeckWithCardsUseCase(DeckRepositoryPort repository, CardFeignClient cardFeignClient) {
-        this.repository = repository;
-        this.cardFeignClient = cardFeignClient;
-    }
 
     public DeckWithCardsDTO execute(Long deckId, String ownerId) {
         Deck deck = repository.findByIdAndOwnerId(deckId, ownerId)

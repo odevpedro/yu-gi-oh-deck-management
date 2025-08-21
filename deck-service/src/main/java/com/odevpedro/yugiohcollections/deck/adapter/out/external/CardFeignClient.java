@@ -10,5 +10,5 @@ import java.util.List;
 public interface CardFeignClient {
 
     @GetMapping("/cards/by-ids")
-    List<CardResponseDTO> findCardsByIds(@RequestParam List<Long> ids);
+    List<CardResponseDTO> findCardsByIds(@RequestParam("ids") List<Long> ids);
 }
