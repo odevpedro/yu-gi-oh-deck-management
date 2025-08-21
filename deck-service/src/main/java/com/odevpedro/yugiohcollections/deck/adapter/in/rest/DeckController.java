@@ -13,17 +13,18 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users/{userId}/decks")
+@RequestMapping("/users/{ownerId}/decks")
 @RequiredArgsConstructor
 public class DeckController {
 
     private final DeckApplicationService service;
 
     @PostMapping("/{deckId}/cards")
-    public DeckView add(@PathVariable String userId,
-                        @PathVariable Long deckId,
-                        @RequestBody AddCardRequest body) throws ChangeSetPersister.NotFoundException {
-        return service.addCard(userId, deckId, body.cardId(), body.quantity());
+    public DeckView add(@PathVariable("ownerId") String ownerId,
+                        @PathVariable("deckId") Long deckId,
+                        @RequestBody AddCardRequest body)
+            throws ChangeSetPersister.NotFoundException {
+        return service.addCard(ownerId, deckId, body.cardId(), body.quantity());
     }
 }
 
