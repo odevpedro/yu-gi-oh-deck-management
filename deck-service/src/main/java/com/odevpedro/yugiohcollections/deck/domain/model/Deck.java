@@ -2,6 +2,7 @@ package com.odevpedro.yugiohcollections.deck.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Objects;
 
 
 @Getter
+@Setter
+
 public class Deck {
 
     private final Long id;
