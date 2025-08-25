@@ -95,13 +95,18 @@ public class DeckView {
                 .build();
     }
 
-    public static Deck simple(com.odevpedro.yugiohcollections.deck.domain.model.Deck deck) {
+    public static DeckView simple(com.odevpedro.yugiohcollections.deck.domain.model.Deck deck) {
+        int main = deck.getMainDeck() != null ? deck.getMainDeck().size() : 0;
+        int extra = deck.getExtraDeck() != null ? deck.getExtraDeck().size() : 0;
+        int side = deck.getSideDeck() != null ? deck.getSideDeck().size() : 0;
+        int total = main + extra + side;
+
         return DeckView.builder()
                 .id(deck.getId())
                 .ownerId(deck.getOwnerId())
                 .name(deck.getName())
-                .cards(List.of())
-                .totalCards(0)
+                .cards(List.of()) // sem enrich por padrão
+                .totalCards(total)
                 .notes(null)
                 .build();
     }

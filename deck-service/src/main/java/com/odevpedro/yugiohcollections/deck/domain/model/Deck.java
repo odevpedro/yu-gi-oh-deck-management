@@ -1,6 +1,6 @@
 package com.odevpedro.yugiohcollections.deck.domain.model;
 
-import lombok.AllArgsConstructor;
+import com.odevpedro.yugiohcollections.deck.adapter.out.persistence.DeckRepositoryAdapter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 
 @Getter
 @Setter
@@ -23,15 +22,14 @@ public class Deck {
     private final List<Long> extraDeck;
     private final List<Long> sideDeck;
 
-    public Deck(Long id, String name, String ownerId,
-                List<Long> mainDeck, List<Long> extraDeck, List<Long> sideDeck) {
-        this.id = id;
-        this.name = name;
-        this.ownerId = ownerId;
-        // garante listas não-nulas e tipadas
-        this.mainDeck = (mainDeck != null) ? new ArrayList<>(mainDeck) : new ArrayList<>();
-        this.extraDeck = (extraDeck != null) ? new ArrayList<>(extraDeck) : new ArrayList<>();
-        this.sideDeck  = (sideDeck  != null) ? new ArrayList<>(sideDeck)  : new ArrayList<>();
+    public static Deck of(String ownerId, String name) {
+        return Deck.builder()
+                .ownerId(ownerId)
+                .name(name)
+                .mainDeck(new ArrayList<>())
+                .extraDeck(new ArrayList<>())
+                .sideDeck(new ArrayList<>())
+                .build();
     }
 
     public void addToMain(Long cardId)  { this.mainDeck.add(Objects.requireNonNull(cardId)); }
