@@ -19,11 +19,6 @@ public class DeckView {
     private int totalCards;
     private String notes;
 
-    /**
-     * Fábrica para quando você tem o domínio puro (Deck) com listas de cardIds,
-     * e já recebeu do card-service a lista de cards enriquecidos (sem quantity).
-     * totalCards = soma dos tamanhos (main + extra + side) OU cards.size() se preferir.
-     */
     public static DeckView from(Deck deck, List<CardSummaryDTO> enrichedCards) {
         if (enrichedCards == null) enrichedCards = List.of();
 
@@ -97,6 +92,17 @@ public class DeckView {
                 .type(info != null ? info.getType() : null)
                 .imageUrl(info != null ? info.getImageUrl() : null)
                 .description(info != null ? info.getDescription() : null)
+                .build();
+    }
+
+    public static Deck simple(com.odevpedro.yugiohcollections.deck.domain.model.Deck deck) {
+        return DeckView.builder()
+                .id(deck.getId())
+                .ownerId(deck.getOwnerId())
+                .name(deck.getName())
+                .cards(List.of())
+                .totalCards(0)
+                .notes(null)
                 .build();
     }
 }

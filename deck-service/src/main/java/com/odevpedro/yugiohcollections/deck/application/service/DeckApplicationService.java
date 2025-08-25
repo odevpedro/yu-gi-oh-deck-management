@@ -26,7 +26,7 @@ public class DeckApplicationService {
 
     /** Cria um deck vazio apenas com nome e ownerId */
     @Transactional
-    public DeckView createDeck(String ownerId, String name) {
+    public Deck createDeck(String ownerId, String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Nome do deck é obrigatório");
         }
@@ -38,7 +38,7 @@ public class DeckApplicationService {
 
         DeckEntity saved = deckRepo.save(e);
 
-        return DeckView.builder()
+        return Deck.builder()
                 .id(saved.getId())
                 .ownerId(saved.getOwnerId())
                 .name(saved.getName())

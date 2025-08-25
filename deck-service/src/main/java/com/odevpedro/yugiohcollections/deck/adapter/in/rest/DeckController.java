@@ -1,18 +1,15 @@
 package com.odevpedro.yugiohcollections.deck.adapter.in.rest;
 
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
-import com.odevpedro.yugiohcollections.deck.application.dto.DeckWithCardsDTO;
 import com.odevpedro.yugiohcollections.deck.application.service.*;
-import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/decks")
@@ -41,7 +38,7 @@ public class DeckController {
 
     // detalhe de um deck (sem resolver cartas)
     @GetMapping("/{deckId}")
-    public DeckView get(@AuthenticationPrincipal Jwt jwt,
+    public DeckView get(@AuthenticationPrincipal OAuth2ResourceServerProperties.Jwt jwt,
                         @PathVariable Long deckId) throws Exception {
         String userId = extractUserId(jwt);
         return service.getDeck(userId, deckId);
@@ -59,7 +56,7 @@ public class DeckController {
     /* ===== helpers ===== */
 
     // ajuste o claim conforme seu token (ex.: "sub", "user_id", "preferred_username"...)
-    private String extractUserId(Jwt jwt) {
+    private String extractUserId(OAuth2ResourceServerProperties.Jwt jwt) {
         Object v = jwt.getClaim("sub");
         if (v == null) throw new IllegalStateException("JWT sem 'sub'");
         return v.toString();
