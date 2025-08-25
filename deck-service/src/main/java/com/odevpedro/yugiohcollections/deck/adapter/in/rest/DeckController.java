@@ -16,6 +16,7 @@ public class DeckController {
 
     private final DeckApplicationService service;
 
+    // cria um deck só com o nome
     @PostMapping
     public DeckView create(@AuthenticationPrincipal Jwt jwt,
                            @RequestBody CreateDeckRequest body) {
@@ -24,6 +25,7 @@ public class DeckController {
         return DeckView.simple(deck);
     }
 
+    // lista decks do usuário autenticado
     @GetMapping
     public List<DeckView> list(@AuthenticationPrincipal Jwt jwt) {
         String userId = extractUserId(jwt);
@@ -32,6 +34,7 @@ public class DeckController {
                 .toList();
     }
 
+    // detalhe de um deck (sem resolver cartas)
     @GetMapping("/{deckId}")
     public DeckView get(@AuthenticationPrincipal Jwt jwt,
                         @PathVariable Long deckId) throws Exception {
@@ -39,6 +42,7 @@ public class DeckController {
         return DeckView.simple(service.getDeck(userId, deckId));
     }
 
+    // adiciona carta ao deck
     @PostMapping("/{deckId}/cards")
     public DeckView addCard(@AuthenticationPrincipal Jwt jwt,
                             @PathVariable Long deckId,
@@ -50,7 +54,10 @@ public class DeckController {
     /* ===== helpers ===== */
 
     private String extractUserId(Jwt jwt) {
-        Object v = jwt.getClaim("sub"); // ✅ correto agora
+        if (jwt == null) {
+            return "dev-user"; // fallback para testes locais sem token
+        }
+        Object v = jwt.getClaim("sub");
         if (v == null) throw new IllegalStateException("JWT sem 'sub'");
         return v.toString();
     }
