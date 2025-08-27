@@ -9,15 +9,18 @@ import java.util.Optional;
 @Getter
 public class TrapCard extends Card {
 
-    private final String ownerId;
+    private String ownerId;
     @Getter
-    private final TrapType trapType;
+    private TrapType trapType;
 
     public TrapCard(Long id, String name, String description, String archetype,
                     CardType type, String imageUrl, TrapType trapType, String ownerId) {
         super(id, name, description, archetype, type, imageUrl);
         this.trapType = trapType;
         this.ownerId = ownerId;
+    }
+
+    public TrapCard(long id, String name, String desc, String archetype, CardType type, String imageUrl) {
     }
 
     public static Optional<TrapCard> create(Long id, String name, String description, String archetype,

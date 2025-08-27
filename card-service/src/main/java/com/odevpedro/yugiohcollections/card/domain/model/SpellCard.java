@@ -11,8 +11,8 @@ import java.util.Optional;
 public class SpellCard extends Card {
 
 
-    private final SpellType spellType;
-    private final String ownerId;
+    private  SpellType spellType;
+    private String ownerId;
 
     public SpellCard(Long id, String name, String description, String archetype,
                      CardType type, String imageUrl, SpellType spellType, String ownerId) {
@@ -20,6 +20,13 @@ public class SpellCard extends Card {
         this.spellType = spellType;
         this.ownerId = ownerId;
     }
+
+    public SpellCard(Long id, String name, String description, String archetype,
+                     CardType type, String imageUrl) {
+        super(id, name, description, archetype, type, imageUrl);
+    }
+
+
 
     public static Optional<SpellCard> create(Long id, String name, String description, String archetype,
                                              String imageUrl, SpellType spellType, String ownerId) {

@@ -19,33 +19,33 @@ public class DeckView {
     private int totalCards;
     private String notes;
 
+    /**
+     * Método usado no endpoint /decks/{id}/full
+     */
     public static DeckView from(Deck deck, List<CardSummaryDTO> enrichedCards) {
         if (enrichedCards == null) enrichedCards = List.of();
 
-        // Se o domínio não guarda quantidade por carta, default = 1
+        // Mapa para contar quantas vezes cada cardId aparece no deck
+        Map<Long, Long> idCountMap = new HashMap<>();
+        for (Long id : deck.allCardIds()) {
+            idCountMap.merge(id, 1L, Long::sum);
+        }
+
+        // Normaliza os DTOs com as quantidades corretas
         List<CardSummaryDTO> normalized = enrichedCards.stream()
-                .map(c -> c.getQuantity() == null
-                        ? CardSummaryDTO.builder()
+                .map(c -> CardSummaryDTO.builder()
                         .cardId(c.getCardId())
                         .name(c.getName())
                         .type(c.getType())
                         .imageUrl(c.getImageUrl())
                         .description(c.getDescription())
-                        .quantity(1)
+                        .quantity(idCountMap.getOrDefault(c.getCardId(), 1L).intValue())
                         .build()
-                        : c)
-                .collect(Collectors.toList());
+                )
+                .toList();
 
-        // total por zonas do domínio (se existirem)
-        int main = deck.getMainDeck() != null ? deck.getMainDeck().size() : 0;
-        int extra = deck.getExtraDeck() != null ? deck.getExtraDeck().size() : 0;
-        int side = deck.getSideDeck() != null ? deck.getSideDeck().size() : 0;
-        int total = (main + extra + side);
-
-        // Se preferir confiar na lista “cards”:
-        if (total == 0 && !normalized.isEmpty()) {
-            total = normalized.stream().mapToInt(c -> Optional.ofNullable(c.getQuantity()).orElse(1)).sum();
-        }
+        // Total de cartas nas zonas
+        int total = deck.allCardIds().size();
 
         return DeckView.builder()
                 .id(deck.getId())
@@ -59,8 +59,6 @@ public class DeckView {
 
     /**
      * Fábrica para quando você está no adapter de persistência e tem DeckEntity com entries (quantity).
-     * Recebe um mapa de informações vindo do card-service (id -> CardSummaryDTO sem quantity),
-     * e monta a lista final com quantity das entries.
      */
     public static DeckView from(DeckEntity deckEntity, Map<Long, CardSummaryDTO> cardInfoById) {
         if (cardInfoById == null) cardInfoById = Map.of();
@@ -95,7 +93,7 @@ public class DeckView {
                 .build();
     }
 
-    public static DeckView simple(com.odevpedro.yugiohcollections.deck.domain.model.Deck deck) {
+    public static DeckView simple(Deck deck) {
         int main = deck.getMainDeck() != null ? deck.getMainDeck().size() : 0;
         int extra = deck.getExtraDeck() != null ? deck.getExtraDeck().size() : 0;
         int side = deck.getSideDeck() != null ? deck.getSideDeck().size() : 0;

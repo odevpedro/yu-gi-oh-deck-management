@@ -1,9 +1,12 @@
 package com.odevpedro.yugiohcollections.card.adapter.out.persistance;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.odevpedro.yugiohcollections.card.adapter.out.external.YgoProFeignClient;
 import com.odevpedro.yugiohcollections.card.adapter.out.persistance.entity.MonsterCardEntity;
 import com.odevpedro.yugiohcollections.card.adapter.out.persistance.repository.MonsterCardJpaRepository;
 import com.odevpedro.yugiohcollections.card.adapter.out.persistance.repository.SpellCardJpaRepository;
 import com.odevpedro.yugiohcollections.card.adapter.out.persistance.repository.TrapCardJpaRepository;
+import com.odevpedro.yugiohcollections.card.application.dto.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.card.application.mapper.CardMapper;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
@@ -19,6 +22,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.odevpedro.yugiohcollections.card.domain.model.enums.CardType.*;
 
 @Component
 public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort {
@@ -27,53 +33,59 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
     private final SpellCardJpaRepository spellRepo;
     private final TrapCardJpaRepository trapRepo;
     private final CardMapper mapper;
+    private final YgoProFeignClient ygoProFeignClient;
 
     public CardRepositoryAdapter(
             MonsterCardJpaRepository monsterRepo,
             SpellCardJpaRepository spellRepo,
             TrapCardJpaRepository trapRepo,
-            CardMapper mapper
+            CardMapper mapper,
+            YgoProFeignClient ygoProFeignClient
     ) {
         this.monsterRepo = monsterRepo;
         this.spellRepo = spellRepo;
         this.trapRepo = trapRepo;
         this.mapper = mapper;
+        this.ygoProFeignClient = ygoProFeignClient;
     }
 
     @Override
-    public Card save(Card card) {
-        if (card instanceof SpellCard s) {
-            // Idempotente: se já existir (ownerId+name+type+spellType), retorna o existente
-            var existing = spellRepo.findByOwnerIdAndNameIgnoreCaseAndTypeAndSpellType(
-                    s.getOwnerId(), s.getName(), s.getType(), s.getSpellType()
-            );
-            if (existing.isPresent()) return mapper.toDomain(existing.get());
+    public List<Card> findAllByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
 
-            var entity = mapper.toEntity(s);
-            return mapper.toDomain(spellRepo.save(entity));
+        String csv = ids.stream().distinct()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        JsonNode response = ygoProFeignClient.getCardsByIds(csv);
+        return parseCardsFromJson(response);
+    }
+
+    private List<Card> parseCardsFromJson(JsonNode response) {
+        if (response == null || !response.has("data")) return List.of();
+
+        List<Card> cards = new ArrayList<>();
+
+        for (JsonNode node : response.get("data")) {
+            long id = node.get("id").asLong();
+            String name = node.get("name").asText();
+            String desc = node.has("desc") ? node.get("desc").asText() : "";
+            String archetype = node.has("archetype") ? node.get("archetype").asText() : null;
+            String typeRaw = node.get("type").asText();
+            String imageUrl = node.get("card_images").get(0).get("image_url").asText();
+
+            CardType type = CardType.fromYgoProType(typeRaw);
+
+            Card card = switch (type) {
+                case MONSTER -> new MonsterCard(id, name, desc, archetype, type, imageUrl);
+                case SPELL   -> new SpellCard(id, name, desc, archetype, type, imageUrl);
+                case TRAP    -> new TrapCard(id, name, desc, archetype, type, imageUrl);
+            };
+
+            cards.add(card);
         }
 
-        if (card instanceof TrapCard t) {
-            var existing = trapRepo.findByOwnerIdAndNameIgnoreCaseAndTypeAndTrapType(
-                    t.getOwnerId(), t.getName(), t.getType(), t.getTrapType()
-            );
-            if (existing.isPresent()) return mapper.toDomain(existing.get());
-
-            var entity = mapper.toEntity(t);
-            return mapper.toDomain(trapRepo.save(entity));
-        }
-
-        if (card instanceof MonsterCard m) {
-            var existing = monsterRepo.findByOwnerIdAndNameIgnoreCaseAndType(
-                    m.getOwnerId(), m.getName(), m.getType()
-            );
-            if (existing.isPresent()) return mapper.toDomain(existing.get());
-
-            var entity = mapper.toEntity(m);
-            return mapper.toDomain(monsterRepo.save(entity));
-        }
-
-        throw new UnsupportedOperationException("Tipo de carta não suportado");
+        return cards;
     }
 
     @Override
@@ -93,19 +105,26 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
     }
 
     @Override
-    public List<Card> findAllByIds(List<Long> ids) {
-        List<Card> all = new ArrayList<>();
+    public Card save(Card card) {
+        if (card instanceof SpellCard s) {
+            return spellRepo.findByOwnerIdAndNameIgnoreCaseAndTypeAndSpellType(
+                    s.getOwnerId(), s.getName(), s.getType(), s.getSpellType()
+            ).map(mapper::toDomain).orElseGet(() -> mapper.toDomain(spellRepo.save(mapper.toEntity(s))));
+        }
 
-        monsterRepo.findAllById(ids)
-                .stream().map(mapper::toDomain).forEach(all::add);
+        if (card instanceof TrapCard t) {
+            return trapRepo.findByOwnerIdAndNameIgnoreCaseAndTypeAndTrapType(
+                    t.getOwnerId(), t.getName(), t.getType(), t.getTrapType()
+            ).map(mapper::toDomain).orElseGet(() -> mapper.toDomain(trapRepo.save(mapper.toEntity(t))));
+        }
 
-        spellRepo.findAllById(ids)
-                .stream().map(mapper::toDomain).forEach(all::add);
+        if (card instanceof MonsterCard m) {
+            return monsterRepo.findByOwnerIdAndNameIgnoreCaseAndType(
+                    m.getOwnerId(), m.getName(), m.getType()
+            ).map(mapper::toDomain).orElseGet(() -> mapper.toDomain(monsterRepo.save(mapper.toEntity(m))));
+        }
 
-        trapRepo.findAllById(ids)
-                .stream().map(mapper::toDomain).forEach(all::add);
-
-        return all;
+        throw new UnsupportedOperationException("Tipo de carta não suportado");
     }
 
     @Override
@@ -117,20 +136,17 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
         };
     }
 
-    // -------------------- Atualização / Exclusão --------------------
-
     @Override
     public Optional<Card> updateCard(Long id, Card updatedCard) {
         if (updatedCard instanceof MonsterCard monster) {
             return monsterRepo.findById(id)
                     .filter(e -> e.getOwnerId().equals(monster.getOwnerId()))
                     .map(existing -> {
-                        MonsterCardEntity entity = mapper.toEntity(monster);
-                        entity.setId(id); // Força a atualização
+                        var entity = mapper.toEntity(monster);
+                        entity.setId(id);
                         return mapper.toDomain(monsterRepo.save(entity));
                     });
         }
-        // (poderia implementar Spell/Trap se necessário)
         return Optional.empty();
     }
 
@@ -149,5 +165,15 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
             return Optional.of(true);
         }
         return Optional.empty();
+    }
+
+    private CardSummaryDTO toCardSummaryDTO(Card card) {
+        return CardSummaryDTO.builder()
+                .cardId(card.getId())
+                .name(card.getName())
+                .type(card.getType() != null ? card.getType().name() : null)
+                .imageUrl(card.getImageUrl())
+                .description(card.getDescription())
+                .build(); // ✅ sem quantity
     }
 }

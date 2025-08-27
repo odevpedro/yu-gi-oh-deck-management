@@ -39,4 +39,12 @@ public class Deck {
     public void removeFromMain(Long cardId)  { this.mainDeck.remove(cardId); }
     public void removeFromExtra(Long cardId) { this.extraDeck.remove(cardId); }
     public void removeFromSide(Long cardId)  { this.sideDeck.remove(cardId); }
+
+    public List<Long> allCardIds() {
+        List<Long> all = new ArrayList<>();
+        if (mainDeck != null) all.addAll(mainDeck);
+        if (extraDeck != null) all.addAll(extraDeck);
+        if (sideDeck != null) all.addAll(sideDeck);
+        return all;
+    }
 }

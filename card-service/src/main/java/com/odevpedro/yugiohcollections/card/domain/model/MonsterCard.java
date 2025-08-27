@@ -7,8 +7,6 @@ import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterType;
 
 import java.util.Optional;
 import java.util.Set;
-
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,12 +15,12 @@ import lombok.Setter;
 public class MonsterCard extends Card {
 
     private String ownerId;
-    private final int attack;
-    private final int defense;
-    private final int level;
-    private final MonsterAttribute attribute;
-    private final MonsterType monsterType;
-    private final Set<MonsterSubType> subTypes;
+    private int attack;
+    private int defense;
+    private  int level;
+    private MonsterAttribute attribute;
+    private  MonsterType monsterType;
+    private  Set<MonsterSubType> subTypes;
 
     public MonsterCard(Long id, String name, String description, String archetype, CardType type,
                        String imageUrl, int attack, int defense, int level,
@@ -36,6 +34,11 @@ public class MonsterCard extends Card {
         this.monsterType = monsterType;
         this.subTypes = subTypes;
         this.ownerId = ownerId;
+    }
+
+    public MonsterCard(Long id, String name, String description, String archetype,
+                       CardType type, String imageUrl) {
+        super(id, name, description, archetype, type, imageUrl);
     }
 
     public static Optional<MonsterCard> create(Long id, String name, String description, String archetype,

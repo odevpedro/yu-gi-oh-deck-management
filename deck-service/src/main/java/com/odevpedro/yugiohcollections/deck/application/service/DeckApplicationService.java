@@ -24,4 +24,5 @@ public interface DeckApplicationService {
         List<Deck> listDecks(String ownerId);
         Deck getDeck(String ownerId, Long deckId) throws Exception;
         Deck addCard(String ownerId, Long deckId, Long cardId, int quantity) throws Exception;
+        DeckView getDeckWithCards(String ownerId, Long deckId) throws Exception;
 }

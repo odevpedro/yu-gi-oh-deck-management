@@ -1,5 +1,8 @@
 package com.odevpedro.yugiohcollections.deck.application.service;
 
+import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardFeignClient;
+import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardSummaryDTO;
+import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.adapter.out.persistence.DeckRepositoryAdapter;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import jakarta.transaction.Transactional;
@@ -14,6 +17,7 @@ import java.util.List;
 public class DeckApplicationServiceImpl implements DeckApplicationService {
 
     private final DeckRepositoryAdapter deckRepository;
+    private final CardFeignClient cardFeignClient;
 
     @Override
     public Deck createDeck(String ownerId, String name) {
@@ -50,5 +54,13 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
         // deckRules.validate(deck);
 
         return deckRepository.save(deck);
+    }
+
+    @Override
+    public DeckView getDeckWithCards(String ownerId, Long deckId) throws Exception {
+        Deck deck = getDeck(ownerId, deckId); // já verifica se é dono
+        List<Long> ids = deck.allCardIds();
+        List<CardSummaryDTO> enriched = cardFeignClient.findCardsByIds(ids);
+        return DeckView.from(deck, enriched);
     }
 }

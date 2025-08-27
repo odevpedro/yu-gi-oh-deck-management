@@ -1,18 +1,19 @@
 package com.odevpedro.yugiohcollections.card.domain.model;
 
 import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
+import org.springframework.web.bind.annotation.GetMapping;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public abstract class Card {
 
-    protected final Long id;
-    protected final String name;
-    protected final String description;
-    protected final String archetype;
-    protected final CardType type;
-    protected final String imageUrl;
-
+    protected Long id;
+    protected String name;
+    protected String description;
+    protected String archetype;
+    protected CardType type;
+    protected String imageUrl;
 }

@@ -1,7 +1,10 @@
 package com.odevpedro.yugiohcollections.deck.adapter.in.rest;
 
+import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardFeignClient;
+import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.application.service.*;
+import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -15,8 +18,8 @@ import java.util.List;
 public class DeckController {
 
     private final DeckApplicationService service;
+    private final CardFeignClient cardFeignClient;
 
-    // cria um deck só com o nome
     @PostMapping
     public DeckView create(@AuthenticationPrincipal Jwt jwt,
                            @RequestBody CreateDeckRequest body) {
@@ -25,7 +28,6 @@ public class DeckController {
         return DeckView.simple(deck);
     }
 
-    // lista decks do usuário autenticado
     @GetMapping
     public List<DeckView> list(@AuthenticationPrincipal Jwt jwt) {
         String userId = extractUserId(jwt);
@@ -34,7 +36,6 @@ public class DeckController {
                 .toList();
     }
 
-    // detalhe de um deck (sem resolver cartas)
     @GetMapping("/{deckId}")
     public DeckView get(@AuthenticationPrincipal Jwt jwt,
                         @PathVariable Long deckId) throws Exception {
@@ -42,7 +43,6 @@ public class DeckController {
         return DeckView.simple(service.getDeck(userId, deckId));
     }
 
-    // adiciona carta ao deck
     @PostMapping("/{deckId}/cards")
     public DeckView addCard(@AuthenticationPrincipal Jwt jwt,
                             @PathVariable Long deckId,
@@ -51,7 +51,30 @@ public class DeckController {
         return DeckView.simple(service.addCard(userId, deckId, body.cardId(), body.quantity()));
     }
 
-    /* ===== helpers ===== */
+    @GetMapping("/{deckId}/full")
+    public DeckView getFull(@AuthenticationPrincipal Jwt jwt,
+                            @PathVariable Long deckId) throws Exception {
+        String userId = extractUserId(jwt);
+        Deck deck = service.getDeck(userId, deckId);
+
+        // Sanitize IDs: remove nulls, negativos e duplicados
+        List<Long> ids = deck.allCardIds().stream()
+                .filter(id -> id != null && id > 0)
+                .distinct()
+                .toList();
+
+        System.out.println(" IDs a serem buscados (limpos): " + ids);
+
+        List<CardSummaryDTO> enrichedCards;
+        try {
+            enrichedCards = cardFeignClient.findCardsByIds(ids);
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar cartas no card-service: " + e.getMessage());
+            enrichedCards = List.of(); // fallback seguro
+        }
+
+        return DeckView.from(deck, enrichedCards);
+    }
 
     private String extractUserId(Jwt jwt) {
         if (jwt == null) {
