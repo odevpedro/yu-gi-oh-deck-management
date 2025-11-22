@@ -12,7 +12,6 @@ public interface ExternalCardQueryPort {
     List<Card> findByFuzzyName(String fname);
     List<Card> findByIds(List<Long> ids);
 
-    // 👇 novo
-    List<Card> findByType(CardType type);                // SPELL/TRAP/MONSTER
-    List<Card> findByTypeAndRace(CardType type, String race); // opcional: sub-tipo
+    List<Card> findByType(CardType type);
+    List<Card> findByTypeAndRace(CardType type, String race);
 }

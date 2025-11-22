@@ -34,7 +34,7 @@ public class YgoProApiClient implements CardSearchPort {
             JsonNode response = client.getCardsByName(clean);
             return mapData(response);
         } catch (FeignException.BadRequest e) {
-            return List.of(); // nome exato não encontrado
+            return List.of();
         }
     }
 
@@ -57,7 +57,7 @@ public class YgoProApiClient implements CardSearchPort {
     @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByType")
     @Retry(name = "ygopro")
     public List<Card> searchByType(String type) {
-        String externalType = toExternalType(type); // "Spell Card" | "Trap Card" | "Effect Monster"
+        String externalType = toExternalType(type);
         if (externalType == null) return List.of();
         try {
             JsonNode response = client.getCardsByType(externalType);
@@ -85,7 +85,6 @@ public class YgoProApiClient implements CardSearchPort {
     }
 
 
-    /* ======== FALLBACKS (mesma assinatura + Exception) ======== */
     private List<Card> fallbackByName(String name, Throwable t) { return List.of(); }
     private List<Card> fallbackByFuzzy(String fname, Throwable t) { return List.of(); }
     private List<Card> fallbackByType(String type, Throwable t) { return List.of(); }
@@ -107,17 +106,15 @@ public class YgoProApiClient implements CardSearchPort {
         return s.trim().replaceAll("^\"|\"$", "");
     }
 
-    /** Converte SPELL/TRAP/MONSTER (ou variações) para o valor aceito pela API externa. */
     private String toExternalType(String raw) {
         if (raw == null || raw.isBlank()) return null;
         String v = raw.trim().toUpperCase(Locale.ROOT);
         if (v.contains("SPELL"))   return "Spell Card";
         if (v.contains("TRAP"))    return "Trap Card";
-        if (v.contains("MONSTER")) return "Effect Monster"; // base para monstros
+        if (v.contains("MONSTER")) return "Effect Monster"; 
         return null;
     }
 
-    /** Normaliza sub-tipo (race) para valores aceitos pela API: Equip, Field, Quick-Play, Continuous, Counter. */
     private String normalizeRace(String race) {
         if (race == null || race.isBlank()) return null;
         String r = race.trim();
@@ -127,7 +124,6 @@ public class YgoProApiClient implements CardSearchPort {
         if (r.equalsIgnoreCase("counter"))    return "Counter";
         if (r.equalsIgnoreCase("field"))      return "Field";
         if (r.equalsIgnoreCase("equip"))      return "Equip";
-        // default: capitaliza primeira letra
         return r.substring(0,1).toUpperCase() + r.substring(1).toLowerCase(Locale.ROOT);
     }
 }

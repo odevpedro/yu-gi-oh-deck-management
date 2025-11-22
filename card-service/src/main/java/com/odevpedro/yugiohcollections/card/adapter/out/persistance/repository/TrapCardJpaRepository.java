@@ -10,10 +10,8 @@ import java.util.Optional;
 
 public interface TrapCardJpaRepository extends JpaRepository<TrapCardEntity, Long> {
 
-    // já existente
     List<TrapCardEntity> findAllByOwnerId(String ownerId);
 
-    // ---- checagem de duplicidade (chave natural) ----
     boolean existsByOwnerIdAndNameIgnoreCaseAndTypeAndTrapType(
             String ownerId,
             String name,
@@ -21,7 +19,6 @@ public interface TrapCardJpaRepository extends JpaRepository<TrapCardEntity, Lon
             TrapType trapType
     );
 
-    // recuperar o existente (para POST idempotente "retorna existente")
     Optional<TrapCardEntity> findByOwnerIdAndNameIgnoreCaseAndTypeAndTrapType(
             String ownerId,
             String name,
@@ -29,6 +26,5 @@ public interface TrapCardJpaRepository extends JpaRepository<TrapCardEntity, Lon
             TrapType trapType
     );
 
-    // (opcional) consultas auxiliares
     List<TrapCardEntity> findAllByType(CardType type);
 }

@@ -14,6 +14,6 @@ public enum CardType {
 
         if (normalized.contains("SPELL")) return SPELL;
         if (normalized.contains("TRAP")) return TRAP;
-        return MONSTER; // fallback: assume MONSTER se não for spell nem trap
+        return MONSTER;
     }
 }

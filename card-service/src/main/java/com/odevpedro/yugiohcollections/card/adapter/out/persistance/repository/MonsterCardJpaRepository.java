@@ -13,7 +13,6 @@ public interface MonsterCardJpaRepository extends JpaRepository<MonsterCardEntit
 
     List<MonsterCardEntity> findAllByOwnerId(String ownerId);
 
-    // ---- checagem/recuperação por chave natural mínima (idempotência) ----
     boolean existsByOwnerIdAndNameIgnoreCaseAndType(
             String ownerId,
             String name,

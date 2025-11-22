@@ -21,7 +21,6 @@ public interface YgoProFeignClient {
     JsonNode getCardsByTypeAndRace(@RequestParam("type") String type,
                                    @RequestParam("race") String race);
 
-    // 👇 novo: por IDs (CSV: "34541863,46986414")
     @GetMapping("/cardinfo.php")
     JsonNode getCardsByIds(@RequestParam("id") String idsCsv);
 

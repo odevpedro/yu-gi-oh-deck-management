@@ -8,7 +8,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.SpellCard;
 import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
 import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
-import feign.FeignException;
+import feign.Feign;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -88,11 +88,11 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
         Long id         = longVal(n, "id");
         String name     = text(n, "name");
         String desc     = text(n, "desc");
-        String arche    = text(n, "archetype"); // pode ser null
+        String arche    = text(n, "archetype");
         String imageUrl = firstImage(n);
-        String typeStr  = text(n, "type");      // "Effect Monster" | "Spell Card" | "Trap Card"
-        String race     = text(n, "race");      // MonsterType OU Spell/Trap Type
-        String ownerId  = null;                 // defina se necessário (usuário/bot importador)
+        String typeStr  = text(n, "type");
+        String race     = text(n, "race");
+        String ownerId  = null;
 
         CardType cardType = toCardType(typeStr);
 
@@ -111,9 +111,9 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
         int def = intVal(n, "def", 0);
         int lvl = intVal(n, "level", 1);
 
-        MonsterAttribute attr = toMonsterAttribute(text(n, "attribute")); // LIGHT/DARK/...
-        MonsterType mtype     = toMonsterType(race);                      // Dragon/Warrior/...
-        Set<MonsterSubType> subs = toMonsterSubTypes(typeStr);            // Effect/Fusion/...
+        MonsterAttribute attr = toMonsterAttribute(text(n, "attribute"));
+        MonsterType mtype     = toMonsterType(race);
+        Set<MonsterSubType> subs = toMonsterSubTypes(typeStr);
 
         return MonsterCard.create(id, name, desc, arche, imageUrl, atk, def, lvl, attr, mtype, subs, ownerId)
                 .orElse(null);
@@ -158,9 +158,7 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
     private SpellType toSpellType(String race) {
         if (race == null) return SpellType.NORMAL; // default seguro
         String s = race.toUpperCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
-        // tente casar direto
         try { return SpellType.valueOf(s); } catch (IllegalArgumentException ignore) {}
-        // aliases comuns (ex.: QUICK_PLAY vem como "Quick-Play")
         if (s.contains("QUICK")) return SpellType.QUICK_PLAY;
         return SpellType.NORMAL;
     }
@@ -173,13 +171,13 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
     }
 
     private MonsterAttribute toMonsterAttribute(String attr) {
-        if (attr == null) return MonsterAttribute.DARK; // default
+        if (attr == null) return MonsterAttribute.DARK;
         String s = attr.toUpperCase(Locale.ROOT);
         try { return MonsterAttribute.valueOf(s); } catch (IllegalArgumentException e) { return MonsterAttribute.DARK; }
     }
 
     private MonsterType toMonsterType(String race) {
-        if (race == null) return MonsterType.DRAGON; // default
+        if (race == null) return MonsterType.DRAGON;
         String s = race.toUpperCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
         try { return MonsterType.valueOf(s); } catch (IllegalArgumentException e) { return MonsterType.DRAGON; }
     }
@@ -190,7 +188,7 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
 
         EnumSet<MonsterSubType> set = EnumSet.noneOf(MonsterSubType.class);
 
-        // marque subtipos presentes no "type" do YGOPro
+
         markIfContains(set, s, "EFFECT", MonsterSubType.EFFECT);
         markIfContains(set, s, "FUSION", MonsterSubType.FUSION);
         markIfContains(set, s, "RITUAL", MonsterSubType.RITUAL);
@@ -219,10 +217,10 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
             String externalType = switch (type) {
                 case SPELL -> "Spell Card";
                 case TRAP  -> "Trap Card";
-                default    -> "Effect Monster"; // ou outra estratégia p/ monsters
+                default    -> "Effect Monster";
             };
             JsonNode root = feign.getCardsByType(externalType);
-            return mapList(root); // reaproveita seu mapeamento JSON → domínio
+            return mapList(root);
         } catch (FeignException.BadRequest e) {
             return List.of();
         }

@@ -12,7 +12,6 @@ public interface SpellCardJpaRepository extends JpaRepository<SpellCardEntity, L
     // já existia
     List<SpellCardEntity> findAllByOwnerId(String ownerId);
 
-    // ── checagem de duplicidade (chave natural) ────────────────────────────────
     boolean existsByOwnerIdAndNameIgnoreCaseAndTypeAndSpellType(
             String ownerId,
             String name,
@@ -20,7 +19,6 @@ public interface SpellCardJpaRepository extends JpaRepository<SpellCardEntity, L
             SpellType spellType
     );
 
-    // recuperar o existente (p/ POST idempotente “retorna existente”)
     Optional<SpellCardEntity> findByOwnerIdAndNameIgnoreCaseAndTypeAndSpellType(
             String ownerId,
             String name,
@@ -28,6 +26,5 @@ public interface SpellCardJpaRepository extends JpaRepository<SpellCardEntity, L
             SpellType spellType
     );
 
-    // (opcional) paginação/consulta por tipo
     List<SpellCardEntity> findAllByType(CardType type);
 }

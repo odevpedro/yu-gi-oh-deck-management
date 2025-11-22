@@ -6,8 +6,7 @@ import lombok.Setter;
 
 import java.util.Set;
 
-/*Essa classe precisa incluir os campos de todos os tipos possiveis,
-* por isso existem os tipos comuns e os especificos de cada.*/
+
 @Getter
 @Setter
 public class CardInputDTO {

@@ -31,7 +31,6 @@ public class CardFactory {
             MonsterType monsterType = MonsterType.valueOf(normalize(node.get("race").asText()));
             Set<MonsterSubType> subTypes = detectMonsterSubtypes(type);
 
-            //cria e faz um cast pro tipo mais abstrato
             return MonsterCard.create(id, name, desc, archetype, image, atk, def, level, attr, monsterType, subTypes, "external import")
                     .map(c -> (Card) c);
         }

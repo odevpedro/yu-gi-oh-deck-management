@@ -5,8 +5,8 @@ import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import java.util.List;
 
 public interface CardSearchPort {
-    List<Card> searchByName(String name);                 // match exato
-    List<Card> searchByFuzzyName(String fname);           // fuzzy (fname)
-    List<Card> searchByType(String type);                 // SPELL|TRAP|MONSTER
-    List<Card> searchByTypeAndRace(String type, String race); // ex.: SPELL + Equip;
+    List<Card> searchByName(String name);
+    List<Card> searchByFuzzyName(String fname);
+    List<Card> searchByType(String type);
+    List<Card> searchByTypeAndRace(String type, String race);
 }
