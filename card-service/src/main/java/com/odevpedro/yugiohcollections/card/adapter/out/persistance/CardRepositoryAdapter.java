@@ -174,6 +174,6 @@ public class CardRepositoryAdapter implements CardPersistencePort, CardQueryPort
                 .type(card.getType() != null ? card.getType().name() : null)
                 .imageUrl(card.getImageUrl())
                 .description(card.getDescription())
-                .build(); // ✅ sem quantity
+                .build();
     }
 }

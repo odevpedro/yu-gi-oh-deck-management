@@ -39,9 +39,9 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
             JsonNode root = feign.getCardsByName(sanitize(name));
             return mapList(root);
         } catch (FeignException.BadRequest e) {
-            return List.of(); // nome não encontrado
+            return List.of();
         } catch (Exception e) {
-            return List.of(); // resiliente
+            return List.of();
         }
     }
 
@@ -106,7 +106,6 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
             return TrapCard.create(id, name, desc, arche, imageUrl, trapType, ownerId).orElse(null);
         }
 
-        // MONSTER
         int atk = intVal(n, "atk", 0);
         int def = intVal(n, "def", 0);
         int lvl = intVal(n, "level", 1);
@@ -152,11 +151,11 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
         String s = typeStr.toLowerCase(Locale.ROOT);
         if (s.contains("spell")) return CardType.SPELL;
         if (s.contains("trap"))  return CardType.TRAP;
-        return CardType.MONSTER; // "Effect Monster", "Fusion Monster", etc.
+        return CardType.MONSTER;
     }
 
     private SpellType toSpellType(String race) {
-        if (race == null) return SpellType.NORMAL; // default seguro
+        if (race == null) return SpellType.NORMAL;
         String s = race.toUpperCase(Locale.ROOT).replace('-', '_').replace(' ', '_');
         try { return SpellType.valueOf(s); } catch (IllegalArgumentException ignore) {}
         if (s.contains("QUICK")) return SpellType.QUICK_PLAY;
@@ -202,7 +201,7 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
         markIfContains(set, s, "UNION", MonsterSubType.UNION);
         markIfContains(set, s, "GEMINI", MonsterSubType.GEMINI);
         markIfContains(set, s, "FLIP", MonsterSubType.FLIP);
-        markIfContains(set, s, "NORMAL", MonsterSubType.NORMAL); // “Normal Monster”
+        markIfContains(set, s, "NORMAL", MonsterSubType.NORMAL);
 
         return set;
     }

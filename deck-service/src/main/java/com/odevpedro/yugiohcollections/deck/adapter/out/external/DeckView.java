@@ -15,7 +15,7 @@ public class DeckView {
     private Long id;
     private String ownerId;
     private String name;
-    private List<CardSummaryDTO> cards; // obtidos via card-service
+    private List<CardSummaryDTO> cards;
     private int totalCards;
     private String notes;
 
@@ -25,13 +25,11 @@ public class DeckView {
     public static DeckView from(Deck deck, List<CardSummaryDTO> enrichedCards) {
         if (enrichedCards == null) enrichedCards = List.of();
 
-        // Mapa para contar quantas vezes cada cardId aparece no deck
         Map<Long, Long> idCountMap = new HashMap<>();
         for (Long id : deck.allCardIds()) {
             idCountMap.merge(id, 1L, Long::sum);
         }
 
-        // Normaliza os DTOs com as quantidades corretas
         List<CardSummaryDTO> normalized = enrichedCards.stream()
                 .map(c -> CardSummaryDTO.builder()
                         .cardId(c.getCardId())
@@ -44,7 +42,6 @@ public class DeckView {
                 )
                 .toList();
 
-        // Total de cartas nas zonas
         int total = deck.allCardIds().size();
 
         return DeckView.builder()
@@ -53,7 +50,7 @@ public class DeckView {
                 .name(deck.getName())
                 .cards(normalized)
                 .totalCards(total)
-                .notes(null) // ajuste se tiver campo de notas no seu domínio
+                .notes(null)
                 .build();
     }
 
@@ -78,7 +75,7 @@ public class DeckView {
                 .name(deckEntity.getName())
                 .cards(cards)
                 .totalCards(total)
-                .notes(null) // ajuste se tiver notas no DeckEntity
+                .notes(null)
                 .build();
     }
 
@@ -103,7 +100,7 @@ public class DeckView {
                 .id(deck.getId())
                 .ownerId(deck.getOwnerId())
                 .name(deck.getName())
-                .cards(List.of()) // sem enrich por padrão
+                .cards(List.of())
                 .totalCards(total)
                 .notes(null)
                 .build();

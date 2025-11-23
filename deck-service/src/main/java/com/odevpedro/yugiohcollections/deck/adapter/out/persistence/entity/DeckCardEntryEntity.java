@@ -14,16 +14,13 @@ public class DeckCardEntryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relacionamento com o Deck
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "deck_id", nullable = false)
     private DeckEntity deck;
 
-    // Apenas referência ao ID da carta do card-service
     @Column(name = "card_id", nullable = false)
     private Long cardId;
 
-    // Quantidade da carta no deck (1, 2 ou 3 geralmente no YGO)
     @Column(nullable = false)
     private int quantity;
 

@@ -45,20 +45,17 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
         Deck deck = deckRepository.findByIdAndOwnerId(deckId, ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("Deck não encontrado para este usuário"));
 
-        // ⚠️ Por padrão adicionamos ao mainDeck — futuramente pode haver lógica para decidir onde vai a carta
         for (int i = 0; i < quantity; i++) {
-            deck.addToMain(cardId); // ou .addToExtra/.addToSide futuramente
+            deck.addToMain(cardId);
         }
 
-        // 🧠 Aqui você pode chamar um DeckRules futuramente:
-        // deckRules.validate(deck);
 
         return deckRepository.save(deck);
     }
 
     @Override
     public DeckView getDeckWithCards(String ownerId, Long deckId) throws Exception {
-        Deck deck = getDeck(ownerId, deckId); // já verifica se é dono
+        Deck deck = getDeck(ownerId, deckId);
         List<Long> ids = deck.allCardIds();
         List<CardSummaryDTO> enriched = cardFeignClient.findCardsByIds(ids);
         return DeckView.from(deck, enriched);

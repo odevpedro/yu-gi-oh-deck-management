@@ -23,7 +23,6 @@ public class DeckQueryService {
         Deck deck = deckRepository.findByIdAndOwnerId(deckId, ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("Deck não encontrado"));
 
-        // Conta quantas vezes cada cardId aparece (nas três zonas)
         Map<Long, Integer> cardCounts = Stream.of(
                         deck.getMainDeck(), deck.getExtraDeck(), deck.getSideDeck()
                 )
@@ -37,17 +36,15 @@ public class DeckQueryService {
 
         List<Long> distinctIds = new ArrayList<>(cardCounts.keySet());
 
-        // Busca dados via Feign
         List<CardSummaryDTO> baseCards = cardClient.findCardsByIds(distinctIds);
 
-        // Enriquecer com quantity
         List<CardSummaryDTO> enriched = baseCards.stream()
                 .map(c -> CardSummaryDTO.builder()
                         .cardId(c.getCardId())
                         .name(c.getName())
                         .type(c.getType())
                         .imageUrl(c.getImageUrl())
-                        .description(c.getDescription()) // se disponível
+                        .description(c.getDescription())
                         .quantity(cardCounts.getOrDefault(c.getCardId(), 1))
                         .build())
                 .toList();

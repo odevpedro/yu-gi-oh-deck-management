@@ -16,7 +16,7 @@ import java.util.List;
 public class CardLookupController {
 
     private final CardQueryPort cardQueryPort;
-    private final SearchCardsUseCase searchCardsUseCase; // ou usecase que consulta oficial+cache
+    private final SearchCardsUseCase searchCardsUseCase;
 
     @GetMapping("/{id}")
     public ResponseEntity<CardSummaryDTO> byId(@PathVariable Long id){
@@ -32,7 +32,7 @@ public class CardLookupController {
         List<CardSummaryDTO> result = cards.stream()
                 .map(this::toCardSummaryDTO)
                 .toList();
-        return ResponseEntity.ok(result); // nunca retorna 404!
+        return ResponseEntity.ok(result);
     }
 
     private CardSummaryDTO toCardSummaryDTO(Card card) {

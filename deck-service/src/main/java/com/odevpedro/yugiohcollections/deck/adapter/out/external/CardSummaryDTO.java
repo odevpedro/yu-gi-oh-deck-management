@@ -11,7 +11,7 @@ import lombok.Setter;
 public class CardSummaryDTO{
     private Long cardId;
     String name;
-    String type;       // "MONSTER" | "SPELL" | "TRAP"
+    String type;
     String imageUrl;
     String description;
     Integer quantity;

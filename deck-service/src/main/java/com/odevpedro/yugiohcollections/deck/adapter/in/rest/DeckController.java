@@ -57,7 +57,6 @@ public class DeckController {
         String userId = extractUserId(jwt);
         Deck deck = service.getDeck(userId, deckId);
 
-        // Sanitize IDs: remove nulls, negativos e duplicados
         List<Long> ids = deck.allCardIds().stream()
                 .filter(id -> id != null && id > 0)
                 .distinct()
@@ -70,7 +69,7 @@ public class DeckController {
             enrichedCards = cardFeignClient.findCardsByIds(ids);
         } catch (Exception e) {
             System.err.println("Erro ao buscar cartas no card-service: " + e.getMessage());
-            enrichedCards = List.of(); // fallback seguro
+            enrichedCards = List.of();
         }
 
         return DeckView.from(deck, enrichedCards);
@@ -78,7 +77,7 @@ public class DeckController {
 
     private String extractUserId(Jwt jwt) {
         if (jwt == null) {
-            return "dev-user"; // fallback para testes locais sem token
+            return "dev-user";
         }
         Object v = jwt.getClaim("sub");
         if (v == null) throw new IllegalStateException("JWT sem 'sub'");

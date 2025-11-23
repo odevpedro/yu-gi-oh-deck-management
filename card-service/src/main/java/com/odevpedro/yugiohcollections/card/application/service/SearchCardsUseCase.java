@@ -94,7 +94,7 @@ public class SearchCardsUseCase {
         if (raw == null) return null;
         String v = raw.trim().toUpperCase();
         try {
-            return CardType.valueOf(v); // MONSTER | SPELL | TRAP
+            return CardType.valueOf(v);
         } catch (IllegalArgumentException ex) {
             if (v.contains("SPELL")) return CardType.SPELL;
             if (v.contains("TRAP"))  return CardType.TRAP;

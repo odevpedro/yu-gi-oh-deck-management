@@ -18,7 +18,6 @@ public class DeckMapper {
         entity.setName(deck.getName());
         entity.setOwnerId(deck.getOwnerId());
 
-        // main
         if (deck.getMainDeck() != null) {
             for (Long cardId : deck.getMainDeck()) {
                 DeckCardEntryEntity e = new DeckCardEntryEntity();
@@ -29,7 +28,6 @@ public class DeckMapper {
             }
         }
 
-        // extra
         if (deck.getExtraDeck() != null) {
             for (Long cardId : deck.getExtraDeck()) {
                 DeckCardEntryEntity e = new DeckCardEntryEntity();
@@ -40,7 +38,6 @@ public class DeckMapper {
             }
         }
 
-        // side
         if (deck.getSideDeck() != null) {
             for (Long cardId : deck.getSideDeck()) {
                 DeckCardEntryEntity e = new DeckCardEntryEntity();
@@ -64,7 +61,7 @@ public class DeckMapper {
                 List<Long> target;
                 if (e.getZone() == DeckZone.EXTRA) target = extra;
                 else if (e.getZone() == DeckZone.SIDE) target = side;
-                else target = main; // default MAIN
+                else target = main;
 
                 int q = Math.max(e.getQuantity(), 1);
                 for (int i = 0; i < q; i++) target.add(e.getCardId());

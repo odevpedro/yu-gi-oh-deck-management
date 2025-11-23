@@ -16,13 +16,11 @@ public class CardInputDTO {
 
     private CardType type;
 
-    // Comuns a todas as cartas
     private String name;
     private String description;
     private String archetype;
     private String imageUrl;
 
-    // Específicos de Monster
     private Integer attack;
     private Integer defense;
     private Integer level;
@@ -30,9 +28,7 @@ public class CardInputDTO {
     private MonsterType monsterType;
     private Set<MonsterSubType> subTypes;
 
-    // Específico de Spell
     private SpellType spellType;
 
-    // Específico de Trap
     private TrapType trapType;
 }

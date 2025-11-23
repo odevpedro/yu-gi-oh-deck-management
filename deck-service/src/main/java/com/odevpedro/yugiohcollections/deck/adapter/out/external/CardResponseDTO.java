@@ -7,7 +7,7 @@ import lombok.Setter;
 public class CardResponseDTO {
     private Long id;
     private String name;
-    private String type;      // "MONSTER" | "SPELL" | "TRAP"
+    private String type;
     private String imageUrl;
-    private String description; // inclua/retire conforme o retorno real
+    private String description;
 }
