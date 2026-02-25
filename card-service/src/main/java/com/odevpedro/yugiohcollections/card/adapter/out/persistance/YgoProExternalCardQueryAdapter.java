@@ -9,6 +9,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
 import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
 import feign.Feign;
+import feign.FeignException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
