@@ -10,4 +10,5 @@ public class CardResponseDTO {
     private String name;
     private String type;
     private String imageUrl;
+    private String description;
 }

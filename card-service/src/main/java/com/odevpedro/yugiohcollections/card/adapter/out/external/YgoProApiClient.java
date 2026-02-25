@@ -1,8 +1,11 @@
 package com.odevpedro.yugiohcollections.card.adapter.out.external;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.odevpedro.yugiohcollections.card.application.CardFactory;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
+import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
+import com.odevpedro.yugiohcollections.card.domain.model.SpellCard;
+import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
+import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.CardSearchPort;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -29,39 +32,36 @@ public class YgoProApiClient implements CardSearchPort {
     @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByName")
     @Retry(name = "ygopro")
     public List<Card> searchByName(String name) {
-        String clean = sanitize(name);
         try {
-            JsonNode response = client.getCardsByName(clean);
-            return mapData(response);
+            return mapData(client.getCardsByName(sanitize(name)));
         } catch (FeignException.BadRequest e) {
             return List.of();
         }
     }
 
     @Override
-    @Cacheable(value = "cardsByFuzzy", key = "T(org.springframework.util.StringUtils).trimAllWhitespace(#fname).toLowerCase()")
+    @Cacheable(value = "cardsByFuzzy",
+            key = "T(org.springframework.util.StringUtils).trimAllWhitespace(#fname).toLowerCase()")
     @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByFuzzy")
     @Retry(name = "ygopro")
     public List<Card> searchByFuzzyName(String fname) {
-        String clean = sanitize(fname);
         try {
-            JsonNode response = client.getCardsByFuzzy(clean);
-            return mapData(response);
+            return mapData(client.getCardsByFuzzy(sanitize(fname)));
         } catch (FeignException.BadRequest e) {
             return List.of();
         }
     }
 
     @Override
-    @Cacheable(value = "cardsByType", key = "T(java.util.Locale).ROOT, #type == null ? 'null' : #type.toLowerCase()")
+    @Cacheable(value = "cardsByType",
+            key = "T(java.util.Locale).ROOT, #type == null ? 'null' : #type.toLowerCase()")
     @CircuitBreaker(name = "ygopro", fallbackMethod = "fallbackByType")
     @Retry(name = "ygopro")
     public List<Card> searchByType(String type) {
         String externalType = toExternalType(type);
         if (externalType == null) return List.of();
         try {
-            JsonNode response = client.getCardsByType(externalType);
-            return mapData(response);
+            return mapData(client.getCardsByType(externalType));
         } catch (FeignException.BadRequest e) {
             return List.of();
         }
@@ -77,29 +77,67 @@ public class YgoProApiClient implements CardSearchPort {
         String externalRace = normalizeRace(race);
         if (externalType == null || externalRace == null) return List.of();
         try {
-            JsonNode response = client.getCardsByTypeAndRace(externalType, externalRace);
-            return mapData(response);
+            return mapData(client.getCardsByTypeAndRace(externalType, externalRace));
         } catch (FeignException.BadRequest e) {
             return List.of();
         }
     }
 
+    // ===== fallbacks =====
 
-    private List<Card> fallbackByName(String name, Throwable t) { return List.of(); }
-    private List<Card> fallbackByFuzzy(String fname, Throwable t) { return List.of(); }
-    private List<Card> fallbackByType(String type, Throwable t) { return List.of(); }
-    private List<Card> fallbackByTypeRace(String type, String race, Throwable t) { return List.of(); }
+    private List<Card> fallbackByName(String name, Throwable t)                   { return List.of(); }
+    private List<Card> fallbackByFuzzy(String fname, Throwable t)                 { return List.of(); }
+    private List<Card> fallbackByType(String type, Throwable t)                   { return List.of(); }
+    private List<Card> fallbackByTypeRace(String type, String race, Throwable t)  { return List.of(); }
 
+    // ===== parsing =====
 
     private List<Card> mapData(JsonNode root) {
+        if (root == null || !root.has("data") || !root.get("data").isArray()) return List.of();
+
         List<Card> cards = new ArrayList<>();
-        if (root != null && root.has("data") && root.get("data").isArray()) {
-            for (JsonNode node : root.get("data")) {
-                CardFactory.fromJson(node).ifPresent(cards::add);
-            }
+        for (JsonNode node : root.get("data")) {
+            Card card = parseCard(node);
+            if (card != null) cards.add(card);
         }
         return cards;
     }
+
+    private Card parseCard(JsonNode node) {
+        Long id       = node.hasNonNull("id")   ? node.get("id").asLong()   : null;
+        String name   = node.hasNonNull("name") ? node.get("name").asText() : null;
+        String desc   = node.hasNonNull("desc") ? node.get("desc").asText() : null;
+        String arche  = node.hasNonNull("archetype") ? node.get("archetype").asText() : null;
+        String image  = firstImage(node);
+        String typeStr = node.hasNonNull("type") ? node.get("type").asText() : null;
+
+        CardType cardType = toCardType(typeStr);
+
+        return switch (cardType) {
+            case SPELL   -> new SpellCard(id, name, desc, arche, cardType, image);
+            case TRAP    -> new TrapCard(id, name, desc, arche, cardType, image);
+            case MONSTER -> new MonsterCard(id, name, desc, arche, cardType, image);
+        };
+    }
+
+    private String firstImage(JsonNode node) {
+        JsonNode imgs = node.get("card_images");
+        if (imgs != null && imgs.isArray() && !imgs.isEmpty()) {
+            JsonNode first = imgs.get(0);
+            if (first.hasNonNull("image_url")) return first.get("image_url").asText();
+        }
+        return null;
+    }
+
+    private CardType toCardType(String typeStr) {
+        if (typeStr == null) return CardType.MONSTER;
+        String s = typeStr.toLowerCase(Locale.ROOT);
+        if (s.contains("spell")) return CardType.SPELL;
+        if (s.contains("trap"))  return CardType.TRAP;
+        return CardType.MONSTER;
+    }
+
+    // ===== helpers =====
 
     private String sanitize(String s) {
         if (s == null) return null;
@@ -111,7 +149,7 @@ public class YgoProApiClient implements CardSearchPort {
         String v = raw.trim().toUpperCase(Locale.ROOT);
         if (v.contains("SPELL"))   return "Spell Card";
         if (v.contains("TRAP"))    return "Trap Card";
-        if (v.contains("MONSTER")) return "Effect Monster"; 
+        if (v.contains("MONSTER")) return "Effect Monster";
         return null;
     }
 
@@ -124,6 +162,6 @@ public class YgoProApiClient implements CardSearchPort {
         if (r.equalsIgnoreCase("counter"))    return "Counter";
         if (r.equalsIgnoreCase("field"))      return "Field";
         if (r.equalsIgnoreCase("equip"))      return "Equip";
-        return r.substring(0,1).toUpperCase() + r.substring(1).toLowerCase(Locale.ROOT);
+        return r.substring(0, 1).toUpperCase() + r.substring(1).toLowerCase(Locale.ROOT);
     }
 }

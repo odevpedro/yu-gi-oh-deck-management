@@ -1,30 +1,30 @@
 package com.odevpedro.yugiohcollections.card.application.service;
 
 import com.odevpedro.yugiohcollections.card.adapter.out.dto.CardResponseDTO;
-import com.odevpedro.yugiohcollections.card.domain.model.ports.CardQueryPort;
+import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FindCardsByIdsUseCase {
 
-    private final CardQueryPort cardQueryPort;
+    private final ExternalCardQueryPort externalQueryPort;
 
-    public FindCardsByIdsUseCase(CardQueryPort cardQueryPort) {
-        this.cardQueryPort = cardQueryPort;
+    public FindCardsByIdsUseCase(ExternalCardQueryPort externalQueryPort) {
+        this.externalQueryPort = externalQueryPort;
     }
 
     public List<CardResponseDTO> execute(List<Long> ids) {
-        return cardQueryPort.findAllByIds(ids)
+        return externalQueryPort.findByIds(ids)
                 .stream()
                 .map(card -> new CardResponseDTO(
                         card.getId(),
                         card.getName(),
                         card.getType().name(),
-                        card.getImageUrl()
+                        card.getImageUrl(),
+                        card.getDescription()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

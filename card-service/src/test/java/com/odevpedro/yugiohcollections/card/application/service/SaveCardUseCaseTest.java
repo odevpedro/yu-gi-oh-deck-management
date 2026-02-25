@@ -1,13 +1,11 @@
 package com.odevpedro.yugiohcollections.card.application.service;
 
-import com.odevpedro.yugiohcollections.card.application.dto.CardInputDTO;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterAttribute;
 import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterSubType;
 import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterType;
-import com.odevpedro.yugiohcollections.card.domain.model.ports.CardPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
