@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+
+  card-db:
+    image: postgres:16-alpine
+    container_name: card-db
+    environment:
+      POSTGRES_DB: carddb
+      POSTGRES_USER: card_user
+      POSTGRES_PASSWORD: card_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - card-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U card_user -d carddb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  deck-db:
+    image: postgres:16-alpine
+    container_name: deck-db
+    environment:
+      POSTGRES_DB: deckdb
+      POSTGRES_USER: deck_user
+      POSTGRES_PASSWORD: deck_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - deck-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deck_user -d deckdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  card-db-data:
+  deck-db-data:

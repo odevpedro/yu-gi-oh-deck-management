@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: deck-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/deckdb
+    driver-class-name: org.postgresql.Driver
+    username: deck_user
+    password: deck_pass
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
