@@ -54,30 +54,6 @@ public class DeckView {
                 .build();
     }
 
-    /**
-     * Fábrica para quando você está no adapter de persistência e tem DeckEntity com entries (quantity).
-     */
-    public static DeckView from(DeckEntity deckEntity, Map<Long, CardSummaryDTO> cardInfoById) {
-        if (cardInfoById == null) cardInfoById = Map.of();
-
-        Map<Long, CardSummaryDTO> finalCardInfoById = cardInfoById;
-        List<CardSummaryDTO> cards = deckEntity.getEntries().stream()
-                .map(entry -> mergeEntryWithCardInfo(entry, finalCardInfoById.get(entry.getCardId())))
-                .collect(Collectors.toList());
-
-        int total = deckEntity.getEntries().stream()
-                .mapToInt(DeckCardEntryEntity::getQuantity)
-                .sum();
-
-        return DeckView.builder()
-                .id(deckEntity.getId())
-                .ownerId(deckEntity.getOwnerId())
-                .name(deckEntity.getName())
-                .cards(cards)
-                .totalCards(total)
-                .notes(null)
-                .build();
-    }
 
     private static CardSummaryDTO mergeEntryWithCardInfo(DeckCardEntryEntity entry, CardSummaryDTO info) {
         return CardSummaryDTO.builder()

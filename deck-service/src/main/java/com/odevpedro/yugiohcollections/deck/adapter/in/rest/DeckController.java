@@ -1,11 +1,9 @@
 package com.odevpedro.yugiohcollections.deck.adapter.in.rest;
 
-import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardFeignClient;
-import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
-import com.odevpedro.yugiohcollections.deck.application.service.*;
-import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
+import com.odevpedro.yugiohcollections.deck.application.service.DeckApplicationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -18,67 +16,55 @@ import java.util.List;
 public class DeckController {
 
     private final DeckApplicationService service;
-    private final CardFeignClient cardFeignClient;
 
     @PostMapping
     public DeckView create(@AuthenticationPrincipal Jwt jwt,
                            @RequestBody CreateDeckRequest body) {
-        String userId = extractUserId(jwt);
-        var deck = service.createDeck(userId, body.name());
-        return DeckView.simple(deck);
+        return DeckView.simple(service.createDeck(extractUserId(jwt), body.name()));
     }
 
     @GetMapping
     public List<DeckView> list(@AuthenticationPrincipal Jwt jwt) {
-        String userId = extractUserId(jwt);
-        return service.listDecks(userId).stream()
+        return service.listDecks(extractUserId(jwt)).stream()
                 .map(DeckView::simple)
                 .toList();
     }
 
     @GetMapping("/{deckId}")
     public DeckView get(@AuthenticationPrincipal Jwt jwt,
-                        @PathVariable Long deckId) throws Exception {
-        String userId = extractUserId(jwt);
-        return DeckView.simple(service.getDeck(userId, deckId));
+                        @PathVariable Long deckId) {
+        return DeckView.simple(service.getDeck(extractUserId(jwt), deckId));
+    }
+
+    @GetMapping("/{deckId}/full")
+    public DeckView getFull(@AuthenticationPrincipal Jwt jwt,
+                            @PathVariable Long deckId) {
+        return service.getDeckWithCards(extractUserId(jwt), deckId);
     }
 
     @PostMapping("/{deckId}/cards")
     public DeckView addCard(@AuthenticationPrincipal Jwt jwt,
                             @PathVariable Long deckId,
-                            @RequestBody AddCardRequest body) throws Exception {
-        String userId = extractUserId(jwt);
-        return DeckView.simple(service.addCard(userId, deckId, body.cardId(), body.quantity()));
+                            @RequestBody AddCardRequest body) {
+        return DeckView.simple(service.addCard(extractUserId(jwt), deckId, body.cardId(), body.quantity()));
     }
 
-    @GetMapping("/{deckId}/full")
-    public DeckView getFull(@AuthenticationPrincipal Jwt jwt,
-                            @PathVariable Long deckId) throws Exception {
-        String userId = extractUserId(jwt);
-        Deck deck = service.getDeck(userId, deckId);
+    @DeleteMapping("/{deckId}/cards")
+    public DeckView removeCard(@AuthenticationPrincipal Jwt jwt,
+                               @PathVariable Long deckId,
+                               @RequestBody RemoveCardRequest body) {
+        return DeckView.simple(service.removeCard(extractUserId(jwt), deckId, body.cardId(), body.zone()));
+    }
 
-        List<Long> ids = deck.allCardIds().stream()
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
-
-        System.out.println(" IDs a serem buscados (limpos): " + ids);
-
-        List<CardSummaryDTO> enrichedCards;
-        try {
-            enrichedCards = cardFeignClient.findCardsByIds(ids);
-        } catch (Exception e) {
-            System.err.println("Erro ao buscar cartas no card-service: " + e.getMessage());
-            enrichedCards = List.of();
-        }
-
-        return DeckView.from(deck, enrichedCards);
+    @DeleteMapping("/{deckId}")
+    public ResponseEntity<Void> deleteDeck(@AuthenticationPrincipal Jwt jwt,
+                                           @PathVariable Long deckId) {
+        service.deleteDeck(extractUserId(jwt), deckId);
+        return ResponseEntity.noContent().build();
     }
 
     private String extractUserId(Jwt jwt) {
-        if (jwt == null) {
-            return "dev-user";
-        }
+        if (jwt == null) return "dev-user";
         Object v = jwt.getClaim("sub");
         if (v == null) throw new IllegalStateException("JWT sem 'sub'");
         return v.toString();
@@ -86,4 +72,5 @@ public class DeckController {
 
     public record CreateDeckRequest(String name) {}
     public record AddCardRequest(Long cardId, int quantity) {}
+    public record RemoveCardRequest(Long cardId, String zone) {}
 }
