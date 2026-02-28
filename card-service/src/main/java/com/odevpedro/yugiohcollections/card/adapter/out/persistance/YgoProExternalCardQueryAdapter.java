@@ -6,7 +6,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.card.domain.model.SpellCard;
 import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
 import feign.Feign;
 import feign.FeignException;
@@ -16,11 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterAttribute;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterSubType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.SpellType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.TrapType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterAttribute;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterSubType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterType;
+import com.odevpedro.yugiohcollections.shared.enums.SpellType;
+import com.odevpedro.yugiohcollections.shared.enums.TrapType;
 
 import java.util.*;
 import java.util.stream.Collectors;

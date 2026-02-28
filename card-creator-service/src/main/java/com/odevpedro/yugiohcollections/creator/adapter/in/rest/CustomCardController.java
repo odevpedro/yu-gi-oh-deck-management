@@ -1,5 +1,6 @@
 package com.odevpedro.yugiohcollections.creator.adapter.in.rest;
 
+import com.odevpedro.yugiohcollections.creator.application.dto.CreateCardRequest;
 import com.odevpedro.yugiohcollections.creator.application.service.CustomCardService;
 import com.odevpedro.yugiohcollections.creator.domain.model.CustomCard;
 import lombok.RequiredArgsConstructor;

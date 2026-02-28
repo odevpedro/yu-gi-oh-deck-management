@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/yu-gi-oh-deck-management.iml" filepath="$PROJECT_DIR$/.idea/yu-gi-oh-deck-management.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/card-creator-service/yu-gi-oh-deck-management.card-creator-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/card-creator-service/yu-gi-oh-deck-management.card-creator-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/card-service/yu-gi-oh-deck-management.card-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/card-service/yu-gi-oh-deck-management.card-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/deck-service/yu-gi-oh-deck-management.deck-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/deck-service/yu-gi-oh-deck-management.deck-service.main.iml" />
     </modules>
   </component>
 </project>

@@ -1,9 +1,9 @@
 package com.odevpedro.yugiohcollections.card.domain.model;
 
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterAttribute;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterSubType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterType;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterAttribute;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterSubType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterType;
 
 import java.util.Optional;
 import java.util.Set;

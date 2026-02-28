@@ -1,9 +1,9 @@
 package com.odevpedro.yugiohcollections.card.domain;
 
 import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterAttribute;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterSubType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.MonsterType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterAttribute;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterSubType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

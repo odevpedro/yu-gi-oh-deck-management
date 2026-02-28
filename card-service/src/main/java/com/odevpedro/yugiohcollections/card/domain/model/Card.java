@@ -1,7 +1,6 @@
 package com.odevpedro.yugiohcollections.card.domain.model;
 
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
-import lombok.*;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;import lombok.*;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Getter

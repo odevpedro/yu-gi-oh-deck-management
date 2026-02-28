@@ -1,7 +1,7 @@
 package com.odevpedro.yugiohcollections.card.domain.model.ports;
 
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

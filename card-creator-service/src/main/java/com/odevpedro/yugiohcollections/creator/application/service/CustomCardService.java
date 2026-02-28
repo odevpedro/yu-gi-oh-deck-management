@@ -4,10 +4,10 @@ import com.odevpedro.yugiohcollections.creator.adapter.out.messaging.CardEventPu
 import com.odevpedro.yugiohcollections.creator.application.dto.CreateCardRequest;
 import com.odevpedro.yugiohcollections.creator.domain.model.CustomCard;
 import com.odevpedro.yugiohcollections.creator.domain.model.enums.CardStatus;
-import com.odevpedro.yugiohcollections.creator.domain.model.enums.CardType;
-import com.odevpedro.yugiohcollections.creator.domain.model.enums.SpellSubType;
-import com.odevpedro.yugiohcollections.creator.domain.model.enums.TrapSubType;
 import com.odevpedro.yugiohcollections.creator.domain.model.ports.CustomCardRepositoryPort;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.SpellType;
+import com.odevpedro.yugiohcollections.shared.enums.TrapType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -67,13 +67,13 @@ public class CustomCardService {
                     ownerId,
                     req.name(),
                     req.description(),
-                    SpellSubType.valueOf(req.subType().toUpperCase())
+                    SpellType.valueOf(req.subType().toUpperCase())
             );
             case TRAP -> CustomCard.createTrap(
                     ownerId,
                     req.name(),
                     req.description(),
-                    TrapSubType.valueOf(req.subType().toUpperCase())
+                    TrapType.valueOf(req.subType().toUpperCase())
             );
         };
     }

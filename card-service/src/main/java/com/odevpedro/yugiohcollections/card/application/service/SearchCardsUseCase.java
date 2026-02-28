@@ -3,7 +3,7 @@ package com.odevpedro.yugiohcollections.card.application.service;
 import com.odevpedro.yugiohcollections.card.adapter.out.dto.CardResponseDTO;
 import com.odevpedro.yugiohcollections.card.application.dto.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
 
 import org.springframework.data.domain.Page;

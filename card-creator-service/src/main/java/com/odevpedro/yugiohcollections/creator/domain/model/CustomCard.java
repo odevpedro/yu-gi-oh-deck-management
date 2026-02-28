@@ -1,6 +1,10 @@
 package com.odevpedro.yugiohcollections.creator.domain.model;
 
-import com.odevpedro.yugiohcollections.creator.domain.model.enums.*;
+import com.odevpedro.yugiohcollections.creator.domain.model.enums.CardStatus;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.MonsterAttribute;
+import com.odevpedro.yugiohcollections.shared.enums.SpellType;
+import com.odevpedro.yugiohcollections.shared.enums.TrapType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -52,7 +56,7 @@ public class CustomCard {
     }
 
     public static CustomCard createSpell(String ownerId, String name, String description,
-                                         SpellSubType subType) {
+                                         SpellType subType) {
         validateCommon(name, description);
         if (subType == null) throw new CardCreationException("Subtipo da Spell é obrigatório");
 
@@ -67,7 +71,7 @@ public class CustomCard {
     }
 
     public static CustomCard createTrap(String ownerId, String name, String description,
-                                        TrapSubType subType) {
+                                        TrapType subType) {
         validateCommon(name, description);
         if (subType == null) throw new CardCreationException("Subtipo da Trap é obrigatório");
 

@@ -1,8 +1,8 @@
 package com.odevpedro.yugiohcollections.card.domain.model;
 
 
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.SpellType;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.SpellType;
 import lombok.Getter;
 
 import java.util.Optional;

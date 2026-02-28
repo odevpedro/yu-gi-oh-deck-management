@@ -5,7 +5,7 @@ import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.card.domain.model.SpellCard;
 import com.odevpedro.yugiohcollections.card.domain.model.TrapCard;
-import com.odevpedro.yugiohcollections.card.domain.model.enums.CardType;
+import com.odevpedro.yugiohcollections.shared.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.CardSearchPort;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
