@@ -7,10 +7,9 @@ on:
     branches: [ master, main ]
 
 jobs:
-  card-service:
-    name: card-service — Build & Test
+  build:
+    name: Build & Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,44 +22,37 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission
-        run: chmod +x card-service/gradlew
+        run: chmod +x gradlew
 
-      - name: Build & Test
-        run: ./gradlew build test --no-daemon
-        working-directory: card-service
+      - name: Build shared-domain
+        run: ./gradlew :shared-domain:build --no-daemon
 
-      - name: Upload test report
+      - name: Build & Test card-service
+        run: ./gradlew :card-service:build :card-service:test --no-daemon
+
+      - name: Build & Test deck-service
+        run: ./gradlew :deck-service:build :deck-service:test --no-daemon
+
+      - name: Build & Test card-creator-service
+        run: ./gradlew :card-creator-service:build :card-creator-service:test --no-daemon
+
+      - name: Upload card-service test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: card-service-test-report
           path: card-service/build/reports/tests/test/
 
-  deck-service:
-    name: deck-service — Build & Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
-
-      - name: Grant execute permission
-        run: chmod +x deck-service/gradlew
-
-      - name: Build & Test
-        run: ./gradlew build test --no-daemon
-        working-directory: deck-service
-
-      - name: Upload test report
+      - name: Upload deck-service test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: deck-service-test-report
           path: deck-service/build/reports/tests/test/
+
+      - name: Upload card-creator-service test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: card-creator-service-test-report
+          path: card-creator-service/build/reports/tests/test/
