@@ -1,20 +1,27 @@
 # Yu-Gi-Oh! Deck Management
 
-Sistema de gerenciamento de coleções e decks de cartas Yu-Gi-Oh!, construído com arquitetura hexagonal em dois microserviços independentes que se comunicam via OpenFeign.
+Sistema de gerenciamento de coleções e decks de cartas Yu-Gi-Oh!, construído com arquitetura hexagonal em microserviços independentes que se comunicam via OpenFeign e Kafka.
 
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.1.9-brightgreen?style=flat-square&logo=springboot)
 ![Gradle](https://img.shields.io/badge/Gradle-7.5-blue?style=flat-square&logo=gradle)
 ![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-purple?style=flat-square)
+![Kafka](https://img.shields.io/badge/Messaging-Kafka-black?style=flat-square&logo=apachekafka)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?style=flat-square&logo=postgresql)
 
 ---
 
 ## Visão Geral
 
-O sistema é dividido em dois serviços com responsabilidades bem delimitadas:
+O sistema é dividido em microserviços com responsabilidades bem delimitadas, organizados como monorepo Gradle. Até o momento esses são os microserviços existentes:
 
-- **card-service** — gerencia o catálogo de cartas (Monster, Spell e Trap), coleções de usuários e integração com a API externa [YGOPRODeck](https://ygoprodeck.com/api-guide/)
-- **deck-service** — gerencia criação e composição de decks (Main, Extra e Side), consultando o `card-service` via Feign para enriquecer os dados das cartas
+| Serviço | Porta | Responsabilidade |
+|---------|-------|-----------------|
+| **card-service** | 8080 | Consulta ao catálogo de cartas via YGOPRODeck API com cache |
+| **deck-service** | 8081 | Criação e composição de decks (Main, Extra e Side) |
+| **card-creator-service** | 8083 | Criação de cartas customizadas com validação assíncrona |
+| **proxy-service** | 8082 | Geração de PDFs de cartas para impressão de proxies |
+| **shared-domain** | — | Biblioteca interna com enums compartilhados entre os serviços |
 
 ---
 
@@ -26,108 +33,86 @@ O projeto segue a **Arquitetura Hexagonal (Ports & Adapters)**, isolando complet
 adapter/in/rest      ← Controllers (entrada HTTP)
 application/service  ← Use Cases (orquestração)
 domain/model         ← Entidades e Ports (núcleo isolado)
-adapter/out/         ← Persistência, Feign, API externa (saída)
+adapter/out/         ← Persistência, Feign, Kafka, API externa (saída)
 ```
 
 ### Diagrama de Comunicação
 
 ```mermaid
 graph TD
-    Client["Cliente HTTP"] -->|"JWT (OAuth2)"| DC[DeckController]
-    Client -->|"JWT (OAuth2)"| CC[CardLookupController]
+    User["Cliente HTTP"]
 
-    subgraph deck-service [:8081]
-        DC --> DAS[DeckApplicationServiceImpl]
-        DAS --> DRA[DeckRepositoryAdapter]
-        DAS -->|OpenFeign| CFC[CardFeignClient]
-        DRA --> DeckDB[(H2 / PostgreSQL)]
+    User -->|GET /cards/search| CS[card-service :8080]
+    User -->|POST /decks| DS[deck-service :8081]
+    User -->|POST /custom-cards| CCS[card-creator-service :8083]
+    User -->|GET /proxy/:deckId| PS[proxy-service :8082]
+
+    CS -->|Caffeine Cache + Resilience4j| YGO[YGOPRODeck API]
+    DS -->|OpenFeign /internal/cards| CS
+    PS -->|OpenFeign /decks/:id/full| DS
+
+    CCS -->|card.created| Kafka[(Kafka)]
+    Kafka -->|card.validated| CCS
+
+    subgraph "Futuro"
+        KV[konami-validator-service :8084]
+        Kafka -->|card.created| KV
+        KV -->|card.validated| Kafka
     end
 
-    subgraph card-service [:8080]
-        CC --> SUC[SaveCardUseCase]
-        SUC --> CPA[CardPersistencePort]
-        CPA --> CardDB[(H2 / PostgreSQL)]
+    CCS --> CreatorDB[(PostgreSQL :5434)]
+    DS --> DeckDB[(PostgreSQL :5433)]
 
-        CFC -->|"GET /cards/by-ids"| FCC[FindCardsByIdsUseCase]
-        FCC -->|Cache Caffeine| CPA
+    SD[shared-domain]
+    SD -.->|enums compartilhados| CS
+    SD -.->|enums compartilhados| CCS
+    SD -.->|enums compartilhados| DS
+    SD -.->|enums compartilhados| KV
+```
 
-        SUC2[SearchCardsUseCase] -->|Resilience4j CB + Retry| YGO[YGOPRODeck API]
+### Fluxo de Criação de Carta Customizada
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant CC as card-creator-service
+    participant DB as PostgreSQL
+    participant K as Kafka
+    participant KV as konami-validator-service
+
+    User->>CC: POST /custom-cards
+    CC->>CC: Validação de domínio
+    CC->>DB: INSERT (status=PENDING)
+    CC->>K: Publica card.created
+    CC-->>User: 201 Created (PENDING)
+
+    K->>KV: Consome card.created
+    KV->>KV: Aplica regras de balanceamento
+
+    alt Aprovada
+        KV->>K: card.validated (APPROVED)
+    else Rejeitada
+        KV->>K: card.validated (REJECTED + motivo)
     end
-```
 
-### Modelo de Domínio — Cartas
-
-```mermaid
-classDiagram
-    class Card {
-        <<abstract>>
-        +Long id
-        +String name
-        +String description
-        +String archetype
-        +CardType type
-        +String imageUrl
-    }
-    class MonsterCard {
-        +MonsterAttribute attribute
-        +MonsterType monsterType
-        +MonsterSubType subType
-        +int attack
-        +int defense
-        +int level
-    }
-    class SpellCard {
-        +SpellType spellType
-    }
-    class TrapCard {
-        +TrapType trapType
-    }
-    Card <|-- MonsterCard
-    Card <|-- SpellCard
-    Card <|-- TrapCard
-```
-
-### Modelo de Domínio — Deck
-
-```mermaid
-classDiagram
-    class Deck {
-        +Long id
-        +String name
-        +String ownerId
-        +List~Long~ mainDeck
-        +List~Long~ extraDeck
-        +List~Long~ sideDeck
-        +addToMain(cardId)
-        +addToExtra(cardId)
-        +addToSide(cardId)
-        +removeFromMain(cardId)
-        +allCardIds() List~Long~
-    }
-    class DeckZone {
-        <<enum>>
-        MAIN
-        EXTRA
-        SIDE
-    }
-    Deck --> DeckZone
+    K->>CC: Consome card.validated
+    CC->>DB: UPDATE status
 ```
 
 ---
 
-## Decisões de Design
+## Shared Domain
 
-**Por que Arquitetura Hexagonal?**
-O domínio de cartas e decks possui regras de negócio complexas (validação de tipos de carta por zona, limites de quantidade) que não devem depender de frameworks. Com a hexagonal, os Use Cases são testáveis de forma unitária sem Spring, sem banco e sem mocks pesados — basta injetar implementações de teste dos ports.
+O `shared-domain` é um módulo Java puro — sem Spring, sem banco, sem dependências externas — que contém os enums que representam o vocabulário do universo Yu-Gi-Oh!. Ele existe porque múltiplos serviços precisam falar a mesma língua, garantindo consistência sem duplicação de código e sem criar acoplamento de runtime entre os serviços.
 
-**Por que dois serviços separados?**
-`card-service` e `deck-service` têm ciclos de vida e escalabilidade diferentes. O catálogo de cartas é lido com muito mais frequência do que decks são modificados, o que permite aplicar cache (Caffeine) de forma independente e escalar os serviços separadamente.
-
-**Por que Resilience4j no card-service?**
-A integração com a API YGOPRODeck é um ponto de falha externo. O Circuit Breaker (`ygopro`) evita cascata de falhas quando a API está instável, e o Retry com backoff lida com falhas transitórias de rede (configurado para `SocketTimeoutException` e `IOException`).
-
-**Por que Flyway?**
-O histórico de schema está versionado em SQL (`V1__` até `V5__` no card-service, `V1__` até `V4__` no deck-service), garantindo que qualquer ambiente suba com o banco no estado correto e que a evolução do schema seja rastreável no histórico do Git.
+| Enum | Valores |
+|------|---------|
+| `CardType` | MONSTER, SPELL, TRAP |
+| `MonsterAttribute` | DARK, LIGHT, FIRE, WATER, EARTH, WIND, DIVINE |
+| `MonsterType` | DRAGON, WARRIOR, SPELLCASTER, FIEND e outros 19 tipos |
+| `MonsterSubType` | NORMAL, EFFECT, FUSION, SYNCHRO, XYZ, LINK e outros |
+| `SpellType` | NORMAL, CONTINUOUS, QUICK_PLAY, FIELD, EQUIP, RITUAL |
+| `TrapType` | NORMAL, CONTINUOUS, COUNTER |
 
 ---
 
@@ -137,58 +122,17 @@ O histórico de schema está versionado em SQL (`V1__` até `V5__` no card-servi
 |--------|-----------|
 | Linguagem | Java 17 |
 | Framework | Spring Boot 3.1.9 |
-| Build | Gradle 7.5 |
+| Build | Gradle 7.5 (monorepo multi-módulo) |
 | Comunicação entre serviços | Spring Cloud OpenFeign |
+| Mensageria | Apache Kafka |
 | Resiliência | Resilience4j (CircuitBreaker + Retry) |
 | Cache | Caffeine (Spring Cache) |
 | Persistência | Spring Data JPA + Flyway |
-| Banco de dados | H2 (dev) |
-| Autenticação | Spring Security OAuth2 Resource Server (JWT) |
+| Banco de dados | PostgreSQL |
+| Geração de PDF | OpenPDF |
 | Mapeamento | Lombok |
-
----
-
-## Estrutura do Projeto
-
-```
-yu-gi-oh-deck-management/
-├── card-service/
-│   ├── src/main/java/.../
-│   │   ├── adapter/in/rest/          # Controllers (CardLookupController, CollectionController...)
-│   │   ├── adapter/out/
-│   │   │   ├── external/             # YgoProFeignClient + YgoProApiClient
-│   │   │   └── persistance/          # Adapters JPA, Repositories, Entities
-│   │   ├── application/
-│   │   │   ├── service/              # Use Cases (SaveCardUseCase, SearchCardsUseCase...)
-│   │   │   └── config/               # CacheConfig, Helpers
-│   │   └── domain/model/
-│   │       ├── Card.java (abstract)
-│   │       ├── MonsterCard.java
-│   │       ├── SpellCard.java
-│   │       ├── TrapCard.java
-│   │       ├── enums/                # CardType, MonsterAttribute, SpellType...
-│   │       └── ports/                # CardPersistencePort, ExternalCardQueryPort...
-│   └── src/main/resources/
-│       ├── application.yml
-│       └── db/migration/             # V1 a V5
-│
-└── deck-service/
-    ├── src/main/java/.../
-    │   ├── adapter/in/rest/          # DeckController
-    │   ├── adapter/out/
-    │   │   ├── external/             # CardFeignClient, DTOs
-    │   │   └── persistence/          # DeckRepositoryAdapter, Entities
-    │   ├── application/
-    │   │   ├── service/              # DeckApplicationServiceImpl, FindDeckByIdUseCase...
-    │   │   └── mapper/               # DeckMapper
-    │   └── domain/model/
-    │       ├── Deck.java
-    │       ├── DeckZone.java
-    │       └── port/                 # DeckRepositoryPort
-    └── src/main/resources/
-        ├── application.yml
-        └── db/migration/             # V1 a V4
-```
+| Containers | Docker + Docker Compose |
+| CI | GitHub Actions |
 
 ---
 
@@ -197,85 +141,86 @@ yu-gi-oh-deck-management/
 ### Pré-requisitos
 
 - Java 17+
-- Gradle 7.5+ (ou use o wrapper `./gradlew`)
+- Docker e Docker Compose
 
-### card-service (porta 8080)
-
-```bash
-cd card-service
-./gradlew bootRun
-```
-
-### deck-service (porta 8081)
+### Subir a infraestrutura
 
 ```bash
-cd deck-service
-./gradlew bootRun
+docker compose up -d
 ```
 
-> Ambos os serviços sobem com H2 em memória por padrão. Nenhuma configuração adicional é necessária para rodar localmente.
+Isso sobe o PostgreSQL (deck-service na porta 5433, card-creator-service na porta 5434), Zookeeper e Kafka.
+
+### Buildar o projeto
+
+```bash
+./gradlew :shared-domain:build
+./gradlew :card-service:bootRun
+./gradlew :deck-service:bootRun
+./gradlew :card-creator-service:bootRun
+./gradlew :proxy-service:bootRun
+```
 
 ---
 
 ## Endpoints Principais
 
-### card-service
+### card-service (8080)
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `POST` | `/cards` | Cadastra uma carta no catálogo |
-| `GET` | `/cards/{id}` | Busca carta por ID |
-| `GET` | `/cards/search?name=...` | Busca carta na API YGOPRODeck |
-| `POST` | `/collections` | Adiciona carta à coleção do usuário |
-| `GET` | `/collections` | Lista coleção do usuário |
-| `DELETE` | `/collections/{id}` | Remove carta da coleção |
+| `GET` | `/cards/search?name=&fname=&type=&page=&size=` | Busca cartas com filtros via YGOPRODeck |
+| `GET` | `/internal/cards/{id}` | Busca carta por ID (uso interno) |
+| `GET` | `/internal/cards?ids=` | Busca múltiplas cartas por IDs (uso interno) |
 
-### deck-service
+### deck-service (8081)
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
 | `POST` | `/decks` | Cria um novo deck |
-| `GET` | `/decks` | Lista decks do usuário autenticado |
+| `GET` | `/decks` | Lista decks do usuário |
 | `GET` | `/decks/{deckId}` | Busca deck por ID |
+| `GET` | `/decks/{deckId}/full` | Retorna deck com dados completos das cartas |
 | `POST` | `/decks/{deckId}/cards` | Adiciona carta ao deck |
-| `GET` | `/decks/{deckId}/full` | Retorna deck com dados completos das cartas (via Feign) |
+| `DELETE` | `/decks/{deckId}/cards` | Remove carta do deck |
+| `DELETE` | `/decks/{deckId}` | Remove deck |
+
+### card-creator-service (8083)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `POST` | `/custom-cards` | Cria carta customizada (requer header `X-User-Id`) |
+| `GET` | `/custom-cards/{id}` | Consulta carta e status de validação |
+| `GET` | `/custom-cards` | Lista cartas do usuário (requer header `X-User-Id`) |
+
+### proxy-service (8082)
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/proxy/{deckId}` | Gera PDF com imagens das cartas do deck para impressão |
 
 ---
 
-## Configuração de Resiliência (card-service)
+## Regras de Criação de Cartas Customizadas
 
-O acesso à API YGOPRODeck é protegido por Circuit Breaker e Retry:
+As validações vivem no domínio — é impossível criar uma `CustomCard` inválida independente de onde for instanciada.
 
-```yaml
-resilience4j:
-  circuitbreaker:
-    instances:
-      ygopro:
-        slidingWindowSize: 10
-        failureRateThreshold: 50      # abre o circuito com 50% de falhas
-        waitDurationInOpenState: 10s
-        minimumNumberOfCalls: 6
-  retry:
-    instances:
-      ygopro:
-        maxAttempts: 3
-        waitDuration: 250ms
-        retryExceptions:
-          - feign.RetryableException
-          - java.net.SocketTimeoutException
-          - java.io.IOException
-```
+- ATK e DEF entre 0 e 5000
+- Level entre 1 e 12
+- Nome máximo de 255 caracteres
+- Descrição/efeito máximo de 2000 caracteres
+- Atributo, tipo e subtipo obrigatórios conforme o tipo da carta
 
 ---
 
 ## Próximos Passos
 
-- [ ] Adicionar testes unitários nos Use Cases com JUnit 5 + Mockito
-- [ ] Adicionar testes de integração com Testcontainers
-- [ ] Configurar Docker Compose para subir os dois serviços + bancos com um comando
-- [ ] Adicionar pipeline CI/CD com GitHub Actions
-- [ ] Implementar validação de regras de deck (limite de 60 cartas no main, 15 no extra/side)
-- [ ] Substituir H2 por PostgreSQL no perfil de produção
+- [ ] konami-validator-service — validação de balanceamento de cartas customizadas via Kafka
+- [ ] community-service — grupos de duelo, geolocalização de jogadores e troca de cartas
+- [ ] WebSocket — notificações em tempo real
+- [ ] Elasticsearch — busca full-text de cartas por efeito/descrição
+- [ ] Validação de regras de deck (40-60 main, máximo 15 extra/side, máximo 3 cópias)
+- [ ] Testes unitários e de integração com Testcontainers
 
 ---
 
