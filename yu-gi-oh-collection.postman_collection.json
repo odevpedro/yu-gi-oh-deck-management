@@ -1,0 +1,216 @@
+{
+  "info": {
+    "name": "Yu-Gi-Oh Deck Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "card_service",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "deck_service",
+      "value": "http://localhost:8081"
+    }
+  ],
+  "item": [
+    {
+      "name": "Card Service",
+      "item": [
+        {
+          "name": "Buscar cartas por nome",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{card_service}}/cards/search?name=Dark Magician&page=0&size=20",
+              "host": ["{{card_service}}"],
+              "path": ["cards", "search"],
+              "query": [
+                { "key": "name", "value": "Dark Magician" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar cartas por nome fuzzy",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{card_service}}/cards/search?fname=dragon&page=0&size=20",
+              "host": ["{{card_service}}"],
+              "path": ["cards", "search"],
+              "query": [
+                { "key": "fname", "value": "dragon" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar cartas por tipo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{card_service}}/cards/search?type=spell&page=0&size=20",
+              "host": ["{{card_service}}"],
+              "path": ["cards", "search"],
+              "query": [
+                { "key": "type", "value": "spell" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar cartas por nome e tipo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{card_service}}/cards/search?fname=zoa&type=monster&page=0&size=20",
+              "host": ["{{card_service}}"],
+              "path": ["cards", "search"],
+              "query": [
+                { "key": "fname", "value": "zoa" },
+                { "key": "type", "value": "monster" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar carta por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{card_service}}/internal/cards/77585513",
+              "host": ["{{card_service}}"],
+              "path": ["internal", "cards", "77585513"]
+            }
+          }
+        },
+        {
+          "name": "Buscar cartas por múltiplos IDs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{card_service}}/internal/cards?ids=77585513,24311372",
+              "host": ["{{card_service}}"],
+              "path": ["internal", "cards"],
+              "query": [
+                { "key": "ids", "value": "77585513,24311372" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deck Service",
+      "item": [
+        {
+          "name": "Criar deck",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{deck_service}}/decks",
+              "host": ["{{deck_service}}"],
+              "path": ["decks"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Blue-Eyes Deck\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar decks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{deck_service}}/decks",
+              "host": ["{{deck_service}}"],
+              "path": ["decks"]
+            }
+          }
+        },
+        {
+          "name": "Buscar deck por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{deck_service}}/decks/1",
+              "host": ["{{deck_service}}"],
+              "path": ["decks", "1"]
+            }
+          }
+        },
+        {
+          "name": "Buscar deck com cartas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{deck_service}}/decks/1/full",
+              "host": ["{{deck_service}}"],
+              "path": ["decks", "1", "full"]
+            }
+          }
+        },
+        {
+          "name": "Adicionar carta ao deck",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{deck_service}}/decks/1/cards",
+              "host": ["{{deck_service}}"],
+              "path": ["decks", "1", "cards"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardId\": 89631139,\n  \"quantity\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Remover carta do deck",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{deck_service}}/decks/1/cards",
+              "host": ["{{deck_service}}"],
+              "path": ["decks", "1", "cards"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cardId\": 89631139,\n  \"zone\": \"MAIN\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Deletar deck",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{deck_service}}/decks/1",
+              "host": ["{{deck_service}}"],
+              "path": ["decks", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

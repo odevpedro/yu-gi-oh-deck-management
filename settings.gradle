@@ -1,2 +1,0 @@
-rootProject.name = 'yu-gi-oh-deck-management'
-include 'card-service', 'deck-service', 'card-creator-service', 'shared-domain'
