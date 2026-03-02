@@ -28,3 +28,4 @@ Thumbs.db
 
 # Spring Boot
 **/application-prod.yml
+!gradle/wrapper/gradle-wrapper.jar
