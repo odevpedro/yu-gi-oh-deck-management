@@ -11,6 +11,7 @@
 
 # IDE - IntelliJ
 .idea/
+!.idea/runConfigurations/
 *.iml
 *.iws
 *.ipr
@@ -28,4 +29,3 @@ Thumbs.db
 
 # Spring Boot
 **/application-prod.yml
-!gradle/wrapper/gradle-wrapper.jar
