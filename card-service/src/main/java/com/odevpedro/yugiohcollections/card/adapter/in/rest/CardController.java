@@ -32,8 +32,6 @@ public class CardController {
         return ResponseEntity.ok(searchCardsUseCase.search(name, fname, type, pageable));
     }
 
-    // ===== Busca interna — usada pelo deck-service via Feign =====
-
     @GetMapping("/internal/cards/{id}")
     public ResponseEntity<CardSummaryDTO> byId(@PathVariable Long id) {
         return externalQueryPort.findByIds(List.of(id)).stream()
