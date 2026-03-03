@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProperties jwtProperties;
@@ -39,7 +40,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            String token = authHeader.substring(7);
+            String token = authHeader.substring(7).trim();
+            System.out.println("Token recebido: [" + token + "]");
 
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes()))
@@ -62,6 +64,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (Exception e) {
+            System.out.println("JwtAuthFilter error: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

@@ -4,6 +4,7 @@ import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.application.service.DeckApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +19,10 @@ public class DeckController {
     private final DeckApplicationService service;
 
     @PostMapping
-    public DeckView create(@AuthenticationPrincipal Jwt jwt,
+    public DeckView create(Authentication auth,
                            @RequestBody CreateDeckRequest body) {
-        return DeckView.simple(service.createDeck(extractUserId(jwt), body.name()));
+        String userId = (String) auth.getDetails();
+        return DeckView.simple(service.createDeck(userId, body.name()));
     }
 
     @GetMapping

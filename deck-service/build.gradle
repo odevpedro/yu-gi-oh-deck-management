@@ -26,6 +26,7 @@ dependencies {
     implementation 'io.github.resilience4j:resilience4j-spring-boot3'
     implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
     implementation 'io.github.resilience4j:resilience4j-retry'
+    implementation project(':shared-domain')
 
     runtimeOnly 'org.postgresql:postgresql'
 
