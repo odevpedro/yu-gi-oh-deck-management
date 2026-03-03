@@ -1,0 +1,26 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5435/authdb
+    driver-class-name: org.postgresql.Driver
+    username: auth_user
+    password: auth_pass
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
+  expiration-ms: 3600000 # 1 hora

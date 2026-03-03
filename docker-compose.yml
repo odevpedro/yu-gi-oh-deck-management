@@ -36,7 +36,25 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===== Zookeeper (necessário para Kafka) =====
+  # ===== Banco do auth-service =====
+  auth-db:
+    image: postgres:16-alpine
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== Zookeeper =====
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -69,3 +87,4 @@ services:
 volumes:
   deck-db-data:
   creator-db-data:
+  auth-db-data:

@@ -1,14 +1,13 @@
-package com.odevpedro.yugiohcollections.creator;
+package com.odevpedro.yugiohcollections.auth;
 
-import com.odevpedro.yugiohcollections.shared.config.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@EnableConfigurationProperties(JwtProperties.class)
 @SpringBootApplication
-public class CardCreatorApplication {
+@EnableConfigurationProperties
+public class AuthServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(CardCreatorApplication.class, args);
+        SpringApplication.run(AuthServiceApplication.class, args);
     }
 }

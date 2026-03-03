@@ -32,3 +32,7 @@ feign:
       ygopro-api:              # mesmo 'name' do @FeignClient
         connectTimeout: 3000
         readTimeout: 4000
+
+jwt:
+  secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
+  expiration-ms: 3600000 # 1 hora

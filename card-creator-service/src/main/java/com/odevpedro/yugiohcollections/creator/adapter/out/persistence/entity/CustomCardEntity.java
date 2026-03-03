@@ -53,6 +53,7 @@ public class CustomCardEntity {
     private String subType;
 
     @Column(updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @UpdateTimestamp
