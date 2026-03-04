@@ -72,7 +72,6 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
         }
     }
 
-    /* ===== helpers ===== */
 
     private List<Card> mapList(JsonNode root) {
         JsonNode data = (root != null) ? root.get("data") : null;
@@ -144,8 +143,6 @@ public class YgoProExternalCardQueryAdapter implements ExternalCardQueryPort {
         }
         return null;
     }
-
-    /* ===== mapeamentos de enums ===== */
 
     private CardType toCardType(String typeStr) {
         if (typeStr == null) return CardType.MONSTER;

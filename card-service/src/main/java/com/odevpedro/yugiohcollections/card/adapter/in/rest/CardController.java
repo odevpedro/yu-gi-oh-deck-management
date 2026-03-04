@@ -5,6 +5,7 @@ import com.odevpedro.yugiohcollections.card.application.dto.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.card.application.service.SearchCardsUseCase;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
+import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,15 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping(ApiRoutes.CARDS_BASE)
 @RequiredArgsConstructor
 public class CardController {
 
     private final ExternalCardQueryPort externalQueryPort;
     private final SearchCardsUseCase searchCardsUseCase;
 
-    // ===== Busca pública — usada pelo cliente final =====
-
-    @GetMapping("/cards/search")
+    @GetMapping
     public ResponseEntity<Page<CardResponseDTO>> search(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String fname,
@@ -32,7 +32,7 @@ public class CardController {
         return ResponseEntity.ok(searchCardsUseCase.search(name, fname, type, pageable));
     }
 
-    @GetMapping("/internal/cards/{id}")
+    @GetMapping(ApiRoutes.CARDS_INTERNAL_BY_ID)
     public ResponseEntity<CardSummaryDTO> byId(@PathVariable Long id) {
         return externalQueryPort.findByIds(List.of(id)).stream()
                 .findFirst()
@@ -41,7 +41,7 @@ public class CardController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/internal/cards")
+    @GetMapping(ApiRoutes.CARDS_INTERNAL)
     public ResponseEntity<List<CardSummaryDTO>> byIds(@RequestParam("ids") List<Long> ids) {
         List<CardSummaryDTO> result = externalQueryPort.findByIds(ids).stream()
                 .map(this::toSummary)
