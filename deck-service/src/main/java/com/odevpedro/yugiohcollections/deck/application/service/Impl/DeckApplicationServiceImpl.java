@@ -1,8 +1,9 @@
-package com.odevpedro.yugiohcollections.deck.application.service;
+package com.odevpedro.yugiohcollections.deck.application.service.Impl;
 
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardFeignClient;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
+import com.odevpedro.yugiohcollections.deck.application.service.DeckApplicationService;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import com.odevpedro.yugiohcollections.deck.domain.model.DeckZone;
 import com.odevpedro.yugiohcollections.deck.domain.port.DeckRepositoryPort;

@@ -2,6 +2,7 @@ package com.odevpedro.yugiohcollections.deck.application.service;
 
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardFeignClient;
 import com.odevpedro.yugiohcollections.deck.adapter.out.persistence.DeckRepositoryAdapter;
+import com.odevpedro.yugiohcollections.deck.application.service.Impl.DeckApplicationServiceImpl;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
