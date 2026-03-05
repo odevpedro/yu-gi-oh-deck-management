@@ -492,6 +492,10 @@ O `deck-service` garante isolamento por usuário: todas as queries filtram por `
 
 ---
 
+### Infra do projeto
+<img width="2641" height="3121" alt="deck-management" src="https://github.com/user-attachments/assets/c5fcde9e-0904-47c8-9d38-2991c09e18d8" />
+
+
 ## Próximos Passos
 
 - [ ] `konami-validator-service` — validação de balanceamento via regras configuráveis
