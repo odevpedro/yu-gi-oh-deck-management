@@ -8,9 +8,12 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/auth-service" />
             <option value="$PROJECT_DIR$/card-creator-service" />
             <option value="$PROJECT_DIR$/card-service" />
+            <option value="$PROJECT_DIR$/community-service" />
             <option value="$PROJECT_DIR$/deck-service" />
+            <option value="$PROJECT_DIR$/proxy-service" />
             <option value="$PROJECT_DIR$/shared-domain" />
           </set>
         </option>

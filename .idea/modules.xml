@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/auth-service/yu-gi-oh-deck-management.auth-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/auth-service/yu-gi-oh-deck-management.auth-service.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/card-creator-service/yu-gi-oh-deck-management.card-creator-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/card-creator-service/yu-gi-oh-deck-management.card-creator-service.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/card-service/yu-gi-oh-deck-management.card-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/card-service/yu-gi-oh-deck-management.card-service.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/deck-service/yu-gi-oh-deck-management.deck-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/deck-service/yu-gi-oh-deck-management.deck-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/proxy-service/yu-gi-oh-deck-management.proxy-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/proxy-service/yu-gi-oh-deck-management.proxy-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared-domain/yu-gi-oh-deck-management.shared-domain.main.iml" filepath="$PROJECT_DIR$/.idea/modules/shared-domain/yu-gi-oh-deck-management.shared-domain.main.iml" />
     </modules>
   </component>
 </project>

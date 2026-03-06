@@ -7,24 +7,44 @@
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../../desenv/gradle-8.13/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.30/f195ee86e6c896ea47a1d39defbe20eb59cd149d/lombok-1.18.30.jar" />
         </processorPath>
+        <module name="yu-gi-oh-deck-management.auth-service.main" />
+        <module name="yu-gi-oh-deck-management.proxy-service.main" />
+        <module name="yu-gi-oh-deck-management.community-service.main" />
+        <module name="yu-gi-oh-deck-management.deck-service.main" />
         <module name="yu-gi-oh-deck-management.card-creator-service.main" />
         <module name="yu-gi-oh-deck-management.card-service.main" />
-        <module name="yu-gi-oh-deck-management.deck-service.main" />
+      </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../desenv/gradle-8.13/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.30/f195ee86e6c896ea47a1d39defbe20eb59cd149d/lombok-1.18.30.jar" />
+          <entry name="$PROJECT_DIR$/../../desenv/gradle-8.13/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/3.2.0/c118a8d5f464983d7298b0f849cb9278f08d1f1e/spring-boot-configuration-processor-3.2.0.jar" />
+        </processorPath>
+        <module name="yu-gi-oh-deck-management.shared-domain.main" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17" />
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="yu-gi-oh-deck-management.auth-service" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.auth-service.main" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.auth-service.test" options="-parameters" />
       <module name="yu-gi-oh-deck-management.card-creator-service" options="-parameters" />
       <module name="yu-gi-oh-deck-management.card-creator-service.main" options="-parameters" />
       <module name="yu-gi-oh-deck-management.card-creator-service.test" options="-parameters" />
       <module name="yu-gi-oh-deck-management.card-service" options="-parameters" />
       <module name="yu-gi-oh-deck-management.card-service.main" options="-parameters" />
       <module name="yu-gi-oh-deck-management.card-service.test" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.community-service" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.community-service.main" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.community-service.test" options="-parameters" />
       <module name="yu-gi-oh-deck-management.deck-service" options="-parameters" />
       <module name="yu-gi-oh-deck-management.deck-service.main" options="-parameters" />
       <module name="yu-gi-oh-deck-management.deck-service.test" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.proxy-service" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.proxy-service.main" options="-parameters" />
+      <module name="yu-gi-oh-deck-management.proxy-service.test" options="-parameters" />
     </option>
   </component>
 </project>
