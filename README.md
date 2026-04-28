@@ -1,64 +1,271 @@
 # Yu-Gi-Oh! Deck Management
 
-Sistema de gerenciamento de coleções e decks de cartas Yu-Gi-Oh!, construído com arquitetura hexagonal em microserviços independentes que se comunicam via OpenFeign e Kafka.
+Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com arquitetura hexagonal em microservicos independentes que se comunicam via OpenFeign e Kafka.
 
-![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.1.9-brightgreen?style=flat-square&logo=springboot)
-![Gradle](https://img.shields.io/badge/Gradle-7.5-blue?style=flat-square&logo=gradle)
-![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-purple?style=flat-square)
-![Kafka](https://img.shields.io/badge/Messaging-Kafka-black?style=flat-square&logo=apachekafka)
-![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?style=flat-square&logo=postgresql)
-![Elasticsearch](https://img.shields.io/badge/Search-Elasticsearch-yellow?style=flat-square&logo=elasticsearch)
-![PostGIS](https://img.shields.io/badge/Geo-PostGIS-336791?style=flat-square&logo=postgresql)
+[![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=java)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.0-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Architecture](https://img.shields.io/badge/Architecture-Hexagonal-purple?style=flat-square)](https://alistair.cockburn.us/hexagonal-architecture/)
+[![Kafka](https://img.shields.io/badge/Messaging-Kafka-black?style=flat-square&logo=apachekafka)](https://kafka.apache.org/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
+[![PostGIS](https://img.shields.io/badge/Geo-PostGIS-336791?style=flat-square&logo=postgresql)](https://postgis.net/)
 
 ---
 
-## Visão Geral
+## Sobre o Projeto
 
-O sistema é dividido em microserviços com responsabilidades bem delimitadas, organizados como monorepo Gradle. Cada serviço é independente, com seu próprio banco de dados e ciclo de deploy.
-
-| Serviço | Porta | Status | Responsabilidade |
-|---------|-------|--------|-----------------|
-| **card-service** | 8080 | ✅ Desenvolvido | Consulta ao catálogo de cartas via YGOPRODeck API com cache |
-| **deck-service** | 8081 | ✅ Desenvolvido | Criação e composição de decks com export/import .ydk |
-| **proxy-service** | 8082 | ✅ Desenvolvido | Geração de PDFs de cartas para impressão de proxies |
-| **card-creator-service** | 8083 | ✅ Desenvolvido | Criação de cartas customizadas com validação assíncrona |
-| **konami-validator-service** | 8084 | 🔄 Planejado | Validação de balanceamento de cartas customizadas via Kafka |
-| **community-service** | 8085 | 🔄 Planejado | Geolocalização de jogadores e sistema de desafio de duelo |
-| **auth-service** | — | 🔄 Planejado | Autenticação e emissão de JWT |
-| **shared-domain** | — | ✅ Desenvolvido | Biblioteca interna com enums e filtro JWT compartilhados |
+API REST para gerenciamento de decks de cartas Yu-Gi-Oh! com funcionalidades de busca de cartas oficiais via YGOPRODeck API, criacao de cartas customizadas, geracao de PDFs para proxies e sistema de comunidade para encontrar jogadores cercanos e desafiar para duelos.
 
 ---
 
-## Arquitetura
+## Stack & Arquitetura
 
-O projeto segue a **Arquitetura Hexagonal (Ports & Adapters)**, isolando completamente o domínio de negócio de frameworks e infraestrutura. Cada serviço é estruturado em três camadas:
+| Camada | Tecnologia |
+|--------|------------|
+| Runtime | Java 17 |
+| Framework | Spring Boot 3.2 |
+| Build | Gradle 7.5 (monorepo multi-modulo) |
+| Comunicacao entre servicos | Spring Cloud OpenFeign |
+| Mensageria | Apache Kafka |
+| Resiliencia | Resilience4j (CircuitBreaker + Retry) |
+| Cache | Caffeine (Spring Cache) |
+| Persistencia | Spring Data JPA + Flyway |
+| Banco de dados | PostgreSQL |
+| Geolocalizacao | PostGIS (ST_DWithin) |
+| Geracao de PDF | OpenPDF |
+| Seguranca | Spring Security + JWT |
+| Mapeamento | Lombok |
+| Containers | Docker + Docker Compose |
+
+> Padrao arquitetural: **Hexagonal (Ports & Adapters)** com separacao em camadas `adapter/in/rest → application/service → domain/model → adapter/out/`.
+
+---
+
+## Estrutura de Pastas
 
 ```
-adapter/in/rest      ← Controllers (entrada HTTP)
-application/service  ← Use Cases (orquestração)
-domain/model         ← Entidades e Ports (núcleo isolado)
-adapter/out/         ← Persistência, Feign, Kafka, API externa (saída)
+yu-gi-oh-deck-management/
+├── shared-domain/               # Biblioteca interna com enums e constantes
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/shared/
+│           ├── constants/       # ApiRoutes - centralizacao de rotas
+│           ├── domain/         # Enums: CardType, MonsterAttribute, etc
+│           └── config/         # JwtAuthFilter
+├── auth-service/                # Autenticacao e emissao de JWT
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/auth/
+│           ├── adapter/in/rest/ # AuthController
+│           ├── application/    # AuthService
+│           └── domain/         # User entity
+├── card-service/                # Consulta ao catalogo de cartas
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/card/
+│           ├── adapter/in/rest/ # CardController
+│           ├── application/    # SearchCardsUseCase
+│           ├── domain/        # Card entity
+│           └── adapter/out/   # ExternalCardQueryPort
+├── deck-service/                # Gerenciamento de decks
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/deck/
+│           ├── adapter/in/rest/ # DeckController
+│           ├── application/    # DeckApplicationService
+│           ├── domain/        # Deck, DeckCardEntry
+│           └── adapter/out/   # DeckRepository, CardFeignClient
+├── card-creator-service/        # Criacao de cartas customizadas
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/creator/
+│           ├── adapter/in/rest/ # CustomCardController
+│           ├── application/    # CustomCardService
+│           └── domain/        # CustomCard entity
+├── proxy-service/               # Geracao de PDF para proxies
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/proxy/
+│           ├── adapter/in/rest/ # ProxyController
+│           └── application/    # ProxyPdfService
+├── community-service/            # Comunidade e desafios
+│   └── src/main/java/
+│       └── com/odevpedro/yugiohcollections/community/
+│           ├── adapter/in/rest/ # PlayerController, ChallengeController
+│           ├── application/    # PlayerService, ChallengeService
+│           └── domain/        # Player, Challenge, DuelStatus
+├── docs/
+│   └── system-feature-flows.md  # Fluxos internos de cada feature
+└── docker-compose.yml           # Infraestrutura
+
+docs/
+├── architecture.md
+├── system-feature-flows.md
+└── adr/
+```
+
+Cada servico segue a estrutura hexagonal:
+
+```
+adapter/in/rest      # Controllers (entrada HTTP)
+application/service  # Use Cases (orquestracao)
+domain/model         # Entidades e Ports (nucleo isolado)
+adapter/out/         # Persistencia, Feign, Kafka, API externa (saida)
 ```
 
 ---
 
-## Fluxo Completo
+## Como Rodar Localmente
+
+### Pre-requisitos
+
+- Java 17+
+- Docker e Docker Compose
+- Gradle 7.5+
+
+### Setup
+
+```bash
+# 1. Clone o repositorio
+git clone https://github.com/odevpedro/yu-gi-oh-deck-management.git && cd yu-gi-oh-deck-management
+
+# 2. Suba a infraestrutura
+docker compose up -d
+
+# 3. Build o projeto
+./gradlew build
+
+# 4. Inicie os servicos desejados
+./gradlew :card-service:bootRun
+./gradlew :deck-service:bootRun
+./gradlew :auth-service:bootRun
+./gradlew :card-creator-service:bootRun
+./gradlew :proxy-service:bootRun
+./gradlew :community-service:bootRun
+```
+
+---
+
+## Testes
+
+```bash
+# Todos os testes
+./gradlew test
+
+# Apenas um servico especifico
+./gradlew :deck-service:test
+
+# Com cobertura
+./gradlew test jacocoTestReport
+```
+
+---
+
+## API — Endpoints Principais
+
+Todas as rotas sao centralizadas em `ApiRoutes` (shared-domain).
+
+### auth-service (8086)
+
+| Metodo | Rota | Descricao | Auth |
+|--------|------|-----------|------|
+| POST | `/auth/register` | Registro de novo usuario | |
+| POST | `/auth/login` | Autenticacao e geracao de token | |
+| GET | `/auth/me` | Retorna dados do usuario logado | Bearer |
+
+### card-service (8080)
+
+| Metodo | Rota | Descricao | Auth |
+|--------|------|-----------|------|
+| GET | `/cards` | Busca cartas com filtros (name, fname, type) | |
+| GET | `/cards/internal/{id}` | Busca carta por ID (uso interno) | Bearer |
+| GET | `/cards/internal?ids=` | Busca multiplas cartas por IDs | Bearer |
+
+### deck-service (8081)
+
+| Metodo | Rota | Descricao | Auth |
+|--------|------|-----------|------|
+| POST | `/decks` | Cria um novo deck | Bearer |
+| GET | `/decks` | Lista decks do usuario | Bearer |
+| GET | `/decks/{deckId}` | Busca deck por ID | Bearer |
+| GET | `/decks/{deckId}/full` | Retorna deck com dados completos das cartas | Bearer |
+| POST | `/decks/{deckId}/cards` | Adiciona carta ao deck | Bearer |
+| DELETE | `/decks/{deckId}/cards` | Remove carta do deck | Bearer |
+| DELETE | `/decks/{deckId}` | Remove deck | Bearer |
+| GET | `/decks/{deckId}/export` | Exporta deck no formato `.ydk` | Bearer |
+
+### card-creator-service (8083)
+
+| Metodo | Rota | Descricao | Auth |
+|--------|------|-----------|------|
+| POST | `/custom-cards` | Cria carta customizada | Bearer |
+| GET | `/custom-cards/{id}` | Consulta carta e status de validacao | Bearer |
+| GET | `/custom-cards` | Lista cartas do usuario | Bearer |
+
+### proxy-service (8082)
+
+| Metodo | Rota | Descricao | Auth |
+|--------|------|-----------|------|
+| GET | `/proxy/{deckId}` | Gera PDF com imagens das cartas para impressao | Bearer |
+
+### community-service (8085)
+
+| Metodo | Rota | Descricao | Auth |
+|--------|------|-----------|------|
+| POST | `/players` | Registra ou atualiza perfil e localizacao | Bearer |
+| PATCH | `/players/me/status` | Atualiza disponibilidade para duelo | Bearer |
+| GET | `/players/nearby` | Jogadores proximos com filtro de status | Bearer |
+| POST | `/challenges` | Envia desafio de duelo | Bearer |
+| PATCH | `/challenges/{id}` | Aceita ou recusa desafio | Bearer |
+| GET | `/challenges/pending` | Lista desafios recebidos | Bearer |
+
+---
+
+## Documentacao Tecnica
+
+| Documento | Descricao |
+|-----------|-----------|
+| [Arquitetura do Sistema](./docs/system-feature-flows.md) | Visao geral, fluxos internos, diagramas |
+| [Backlog](./backlog.md) | Status de desenvolvimento do projeto |
+
+---
+
+## Status do Projeto
+
+```
+[x] MVP — card-service, deck-service, proxy-service, card-creator-service
+[x] v0.2 — community-service, auth-service, centralizacao de rotas
+[ ] v1.0 — validacao de regras de deck, import .ydk, testes
+[ ] v2.0 — Elasticsearch, API Gateway, konami-validator-service
+```
+
+---
+
+## Regras de Criacao de Cartas Customizadas
+
+As validacoes vivem no dominio — e impossivel criar uma `CustomCard` invalida independente de onde for instanciada.
+
+- ATK e DEF entre 0 e 5000
+- Level entre 1 e 12
+- Nome maximo de 255 caracteres
+- Descricao/efeito maximo de 2000 caracteres
+- Atributo, tipo e subtipo obrigatorios conforme o tipo da carta
+
+---
+
+## Seguranca
+
+Todos os endpoints sao protegidos via JWT. O token carrega `userId` e `role`, propagados pelo `JwtAuthFilter` do `shared-domain`. Cada servico valida o token de forma independente — nao ha chamada ao `auth-service` a cada requisicao.
+
+O `deck-service` garante isolamento por usuario: todas as queries filtram por `ownerId` extrado do token, tornando impossivel acessar ou modificar decks de outro usuario mesmo conhecendo o ID.
+
+---
+
+## Fluxo Completo da Arquitetura
 
 ```mermaid
 graph TB
     Client["Cliente HTTP"]
 
-    subgraph AUTH["auth-service (planejado)"]
-        AuthAPI["POST /auth/login · POST /auth/refresh · GET /users/me"]
-        AuthDB[("PostgreSQL: users · roles · refresh_tokens")]
+    subgraph AUTH["auth-service (8086)"]
+        AuthAPI["POST /auth/login · POST /auth/register · GET /auth/me"]
+        AuthDB[("PostgreSQL: users")]
         JwtProv["JWT Provider: userId + role"]
         AuthAPI --> AuthDB
         AuthAPI --> JwtProv
-    end
-
-    subgraph GATEWAY["API Gateway (planejado)"]
-        GW["Spring Cloud Gateway: roteamento · rate limit · JWT filter"]
     end
 
     subgraph CARD["card-service :8080"]
@@ -104,19 +311,7 @@ graph TB
         CreatorSub --> CreatorDB
     end
 
-    subgraph VALIDATOR["konami-validator-service :8084 (planejado)"]
-        ValSub["Kafka Consumer: card.created"]
-        ValEngine["Validation Engine: stats · efeito · equilibrio · composicao"]
-        ValDB[("PostgreSQL: validation_log")]
-        ValPub["Kafka Producer: card.validated: APPROVED / REJECTED + motivo"]
-        DLQ["Dead Letter Queue"]
-        ValSub --> ValEngine
-        ValEngine --> ValDB
-        ValEngine --> ValPub
-        ValSub -->|falha apos N tentativas| DLQ
-    end
-
-    subgraph COMMUNITY["community-service :8085 (planejado)"]
+    subgraph COMMUNITY["community-service :8085"]
         CommCtrl["POST /players · PATCH /players/me/status · GET /players/nearby · POST /challenges · PATCH /challenges/{id}"]
         CommJWT["JwtAuthFilter: extrai userId"]
         CommSvc["PlayerService + ChallengeService"]
@@ -140,372 +335,40 @@ graph TB
         T4["duel.encerrado"]
     end
 
-    subgraph OBS["Observability"]
-        Prom["Prometheus"]
-        Graf["Grafana: dashboards · alertas"]
-        Zipkin["Zipkin: distributed tracing"]
-        Prom --> Graf
-        Zipkin --> Graf
-    end
-
     YGO["YGOPRODeck API"]
 
-    Client --> GW
-    GW --> CARD
-    GW --> DECK
-    GW --> PROXY
-    GW --> CREATOR
-    GW --> COMMUNITY
-    GW -->|JWT validado| AUTH
+    Client --> CARD
+    Client --> DECK
+    Client --> PROXY
+    Client --> CREATOR
+    Client --> COMMUNITY
+    Client --> AUTH
 
     CardCB -->|GET| YGO
     DeckFeign -->|OpenFeign| CardCtrl
     ProxyFeign -->|OpenFeign| DeckCtrl
-    CreatorPub --> T1 --> ValSub
-    ValPub --> T2 --> CreatorSub
+    CreatorPub --> T1 --> CommSub
     CommPub --> T3
     T4 --> CommSub
-
-    DECK -.->|metricas · traces| OBS
-    CARD -.-> OBS
-    CREATOR -.-> OBS
-    VALIDATOR -.-> OBS
-    COMMUNITY -.-> OBS
-    AUTH -.-> OBS
 ```
 
 ---
 
-## Diagramas por Serviço
+## Infra do Projeto
 
-### auth-service
-
-```mermaid
-graph TB
-    Client["Cliente HTTP"]
-
-    subgraph shared-domain["shared-domain (biblioteca interna)"]
-        JwtFilter["JwtAuthFilter · valida token em todos os servicos · extrai userId e role"]
-        SharedEnums["Enums compartilhados · CardType · MonsterAttribute · MonsterType · MonsterSubType · SpellType · TrapType · DeckZone"]
-    end
-
-    subgraph auth-service["auth-service (planejado)"]
-        AuthController["AuthController · POST /auth/login · POST /auth/refresh · POST /auth/logout · GET /users/me · PATCH /users/me"]
-        AuthService["AuthApplicationService"]
-        JwtProvider["JWT Provider · HS256 · payload: userId + role + exp"]
-        DB[("PostgreSQL · users · roles · refresh_tokens")]
-        AuthController --> AuthService
-        AuthService --> JwtProvider
-        AuthService --> DB
-    end
-
-    Client --> AuthController
-    JwtProvider -->|"token"| Client
-    JwtFilter -.->|"usado por todos os servicos"| JwtProvider
-```
-
-### card-service
-
-```mermaid
-graph TB
-    Client["Cliente HTTP"]
-
-    subgraph card-service["card-service :8080"]
-        Controller["CardController · GET /cards/search · GET /internal/cards/{id} · GET /internal/cards?ids="]
-        Cache["Caffeine Cache · Spring Cache"]
-        CB["Resilience4j · CircuitBreaker + Retry"]
-        Service["CardApplicationService"]
-        Controller --> Service
-        Service --> Cache
-        Cache -->|miss| CB
-    end
-
-    CB -->|GET| YGO["YGOPRODeck API · api externa"]
-    Client --> Controller
-```
-
-### deck-service
-
-```mermaid
-graph TB
-    Client["Cliente HTTP / JWT"]
-
-    subgraph deck-service["deck-service :8081"]
-        Controller["DeckController · POST /decks · GET /decks · GET /decks/{id} · GET /decks/{id}/full · POST /decks/{id}/cards · DELETE /decks/{id}/cards · DELETE /decks/{id} · GET /decks/{id}/export"]
-        JWT["JwtAuthFilter · extrai userId do token"]
-        Service["DeckApplicationService"]
-        Validator["Deck Validator · 40-60 main · max 3 copias · extra e side max 15"]
-        Mapper["DeckMapper · toDomain / toEntity"]
-        DB[("PostgreSQL :5433 · decks · deck_card_entries")]
-        Feign["CardFeignClient · GET /internal/cards"]
-        Controller --> JWT
-        JWT --> Service
-        Service --> Validator
-        Service --> Mapper
-        Mapper --> DB
-        Service --> Feign
-    end
-
-    Client --> Controller
-    Feign -->|OpenFeign| CardService["card-service :8080"]
-```
-
-### proxy-service
-
-```mermaid
-graph TB
-    Client["Cliente HTTP"]
-
-    subgraph proxy-service["proxy-service :8082"]
-        Controller["ProxyController · GET /proxy/{deckId}"]
-        Service["ProxyApplicationService"]
-        PDFGen["PDF Generator · OpenPDF · layout de carta por pagina"]
-        Feign["DeckFeignClient · GET /decks/{id}/full"]
-        Controller --> Service
-        Service --> Feign
-        Service --> PDFGen
-    end
-
-    Client --> Controller
-    Feign -->|OpenFeign| DeckService["deck-service :8081"]
-    PDFGen -->|"attachment: deck-{id}.pdf"| Client
-```
-
-### card-creator-service
-
-```mermaid
-graph TB
-    Client["Cliente HTTP / JWT"]
-
-    subgraph card-creator-service["card-creator-service :8083"]
-        Controller["CardCreatorController · POST /custom-cards · GET /custom-cards/{id} · GET /custom-cards"]
-        JWT["JwtAuthFilter · extrai userId do token"]
-        Service["CardCreatorApplicationService"]
-        DomainVal["Domain Validator · ATK e DEF 0-5000 · Level 1-12 · Nome max 255 chars · Efeito max 2000 chars"]
-        DB[("PostgreSQL :5434 · custom_cards · status: PENDING / APPROVED / REJECTED")]
-        Publisher["Kafka Producer · topic: card.created"]
-        Consumer["Kafka Consumer · topic: card.validated"]
-        Controller --> JWT
-        JWT --> Service
-        Service --> DomainVal
-        DomainVal --> DB
-        DB --> Publisher
-        Consumer --> DB
-    end
-
-    Client --> Controller
-    Publisher -->|"card.created"| Kafka[("Kafka")]
-    Kafka -->|"card.validated"| Consumer
-```
-
-### konami-validator-service
-
-```mermaid
-graph TB
-    Kafka[("Kafka")]
-
-    subgraph konami-validator-service["konami-validator-service :8084 (planejado)"]
-        Consumer["Kafka Consumer · topic: card.created"]
-        Engine["Validation Engine · Stats: ATK e DEF por nivel · Efeito: deteccao de texto abusivo · Equilibrio: custo vs beneficio · Regras: composicao por tipo"]
-        DB[("PostgreSQL · validation_log · motivo + timestamp")]
-        Publisher["Kafka Producer · topic: card.validated · status: APPROVED / REJECTED + motivo"]
-        DLQ["Dead Letter Queue · falhas de processamento"]
-        Consumer --> Engine
-        Engine --> DB
-        Engine --> Publisher
-        Consumer -->|"falha apos N tentativas"| DLQ
-    end
-
-    Kafka -->|"card.created"| Consumer
-    Publisher -->|"card.validated"| Kafka
-```
-
-### community-service
-
-```mermaid
-graph TB
-    Client["Cliente HTTP / JWT"]
-    Kafka[("Kafka")]
-
-    subgraph community-service["community-service :8085 (planejado)"]
-        Controller["CommunityController · POST /players · PATCH /players/me/status · GET /players/nearby · POST /challenges · PATCH /challenges/{id} · GET /challenges/pending"]
-        JWT["JwtAuthFilter · extrai userId do token"]
-        PlayerService["PlayerService · registra perfil e localizacao · atualiza duelStatus"]
-        ChallengeService["ChallengeService · envia e responde desafios · expiracao automatica"]
-        GeoQuery["PostGIS Query · ST_DWithin · busca por raio em km"]
-        Scheduler["@Scheduled · expira challenges PENDING · a cada 1 minuto"]
-        DB[("PostgreSQL + PostGIS · players: location POINT · challenges: status e expiracao")]
-        Publisher["Kafka Producer · desafio.recebido · desafio.aceito · desafio.recusado · desafio.expirado"]
-        Consumer["Kafka Consumer · duel.encerrado · atualiza duelStatus para AVAILABLE"]
-        Controller --> JWT
-        JWT --> PlayerService
-        JWT --> ChallengeService
-        PlayerService --> GeoQuery
-        GeoQuery --> DB
-        ChallengeService --> DB
-        ChallengeService --> Publisher
-        Scheduler --> DB
-        Scheduler --> Publisher
-        Consumer --> DB
-    end
-
-    Client --> Controller
-    Publisher -->|eventos de desafio| Kafka
-    Kafka -->|"duel.encerrado"| Consumer
-```
-
----
-
-## Shared Domain
-
-O `shared-domain` é um módulo Java puro — sem Spring, sem banco, sem dependências externas — que contém os enums e o `JwtAuthFilter` compartilhados entre os serviços. Garante consistência sem duplicação de código e sem acoplamento de runtime.
-
-| Enum | Valores |
-|------|---------|
-| `CardType` | MONSTER, SPELL, TRAP |
-| `MonsterAttribute` | DARK, LIGHT, FIRE, WATER, EARTH, WIND, DIVINE |
-| `MonsterType` | DRAGON, WARRIOR, SPELLCASTER, FIEND e outros 19 tipos |
-| `MonsterSubType` | NORMAL, EFFECT, FUSION, SYNCHRO, XYZ, LINK e outros |
-| `SpellType` | NORMAL, CONTINUOUS, QUICK_PLAY, FIELD, EQUIP, RITUAL |
-| `TrapType` | NORMAL, CONTINUOUS, COUNTER |
-| `DeckZone` | MAIN, EXTRA, SIDE |
-
----
-
-## Stack
-
-| Camada | Tecnologia |
-|--------|-----------|
-| Linguagem | Java 17 |
-| Framework | Spring Boot 3.1.9 |
-| Build | Gradle 7.5 (monorepo multi-módulo) |
-| Comunicação entre serviços | Spring Cloud OpenFeign |
-| Mensageria | Apache Kafka |
-| Resiliência | Resilience4j (CircuitBreaker + Retry) |
-| Cache | Caffeine (Spring Cache) |
-| Persistência | Spring Data JPA + Flyway |
-| Banco de dados | PostgreSQL |
-| Geolocalização | PostGIS (ST_DWithin) |
-| Busca full-text | Elasticsearch (planejado) |
-| Geração de PDF | OpenPDF |
-| Segurança | Spring Security + JWT |
-| Mapeamento | Lombok |
-| Containers | Docker + Docker Compose |
-| CI | GitHub Actions |
-
----
-
-## Como Executar
-
-### Pré-requisitos
-
-- Java 17+
-- Docker e Docker Compose
-
-### Subir a infraestrutura
-
-```bash
-docker compose up -d
-```
-
-Isso sobe PostgreSQL (deck-service na porta 5433, card-creator-service na porta 5434), Zookeeper e Kafka.
-
-### Buildar o projeto
-
-```bash
-./gradlew :shared-domain:build
-./gradlew :card-service:bootRun
-./gradlew :deck-service:bootRun
-./gradlew :card-creator-service:bootRun
-./gradlew :proxy-service:bootRun
-```
-
----
-
-## Endpoints Principais
-
-### card-service (8080)
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/cards/search?name=&fname=&type=&page=&size=` | Busca cartas com filtros via YGOPRODeck |
-| `GET` | `/internal/cards/{id}` | Busca carta por ID (uso interno) |
-| `GET` | `/internal/cards?ids=` | Busca múltiplas cartas por IDs (uso interno) |
-
-### deck-service (8081)
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `POST` | `/decks` | Cria um novo deck |
-| `GET` | `/decks` | Lista decks do usuário autenticado |
-| `GET` | `/decks/{deckId}` | Busca deck por ID |
-| `GET` | `/decks/{deckId}/full` | Retorna deck com dados completos das cartas |
-| `POST` | `/decks/{deckId}/cards` | Adiciona carta ao deck |
-| `DELETE` | `/decks/{deckId}/cards` | Remove carta do deck |
-| `DELETE` | `/decks/{deckId}` | Remove deck |
-| `GET` | `/decks/{deckId}/export` | Exporta deck no formato `.ydk` |
-
-### card-creator-service (8083)
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `POST` | `/custom-cards` | Cria carta customizada |
-| `GET` | `/custom-cards/{id}` | Consulta carta e status de validação |
-| `GET` | `/custom-cards` | Lista cartas do usuário |
-
-### proxy-service (8082)
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/proxy/{deckId}` | Gera PDF com imagens das cartas do deck para impressão |
-
-### community-service (8085)
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `POST` | `/players` | Registra ou atualiza perfil e localização |
-| `PATCH` | `/players/me/status` | Atualiza disponibilidade para duelo |
-| `GET` | `/players/nearby?lat=&lng=&radiusKm=&status=` | Jogadores próximos com filtro de status |
-| `POST` | `/challenges` | Envia desafio de duelo para jogador próximo |
-| `PATCH` | `/challenges/{id}` | Aceita ou recusa desafio |
-| `GET` | `/challenges/pending` | Lista desafios recebidos aguardando resposta |
-
----
-
-## Regras de Criação de Cartas Customizadas
-
-As validações vivem no domínio — é impossível criar uma `CustomCard` inválida independente de onde for instanciada.
-
-- ATK e DEF entre 0 e 5000
-- Level entre 1 e 12
-- Nome máximo de 255 caracteres
-- Descrição/efeito máximo de 2000 caracteres
-- Atributo, tipo e subtipo obrigatórios conforme o tipo da carta
-
----
-
-## Segurança
-
-Todos os endpoints são protegidos via JWT. O token carrega `userId` e `role`, propagados pelo `JwtAuthFilter` do `shared-domain`. Cada serviço valida o token de forma independente — não há chamada ao `auth-service` a cada requisição.
-
-O `deck-service` garante isolamento por usuário: todas as queries filtram por `ownerId` extraído do token, tornando impossível acessar ou modificar decks de outro usuário mesmo conhecendo o ID.
-
----
-
-### Infra do projeto
 <img width="2641" height="3121" alt="deck-management" src="https://github.com/user-attachments/assets/c5fcde9e-0904-47c8-9d38-2991c09e18d8" />
 
+---
 
-## Próximos Passos
+## Contribuindo
 
-- [ ] `konami-validator-service` — validação de balanceamento via regras configuráveis
-- [ ] `community-service` — geolocalização com PostGIS e sistema de desafio de duelo
-- [ ] `auth-service` — especificamente: autenticação centralizada com refresh token e logout
-- [ ] Elasticsearch — busca full-text de cartas por descrição de efeito
-- [ ] Validação de regras de deck (40-60 main, máximo 15 extra/side, máximo 3 cópias)
-- [ ] Import de deck via arquivo `.ydk`
-- [ ] Testes unitários e de integração com Testcontainers
-- [ ] `duel-service` (repo separado) — motor de duelo integrado ao ocgcore (C++ + Lua)
+1. Fork o repositorio
+2. Crie uma branch: `git checkout -b feature/minha-feature`
+3. Commit suas mudancas: `git commit -m 'feat: adiciona minha feature'`
+4. Push: `git push origin feature/minha-feature`
+5. Abra um Pull Request descrevendo o que foi feito
+
+> Siga o padrao [Conventional Commits](https://www.conventionalcommits.org/pt-br/).
 
 ---
 
