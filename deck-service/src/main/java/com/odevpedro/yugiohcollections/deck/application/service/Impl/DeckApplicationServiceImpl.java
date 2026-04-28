@@ -4,9 +4,11 @@ import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardFeignClient
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.application.service.DeckApplicationService;
+import com.odevpedro.yugiohcollections.deck.domain.exception.DeckValidationException;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import com.odevpedro.yugiohcollections.deck.domain.model.DeckZone;
 import com.odevpedro.yugiohcollections.deck.domain.port.DeckRepositoryPort;
+import com.odevpedro.yugiohcollections.deck.domain.service.DeckValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
 
     private final DeckRepositoryPort deckRepository;
     private final CardFeignClient cardFeignClient;
+    private final DeckValidator deckValidator;
 
     @Override
     public Deck createDeck(String ownerId, String name) {
@@ -38,7 +41,7 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
     @Override
     public Deck getDeck(String ownerId, Long deckId) {
         return deckRepository.findByIdAndOwnerId(deckId, ownerId)
-                .orElseThrow(() -> new IllegalArgumentException("Deck não encontrado para este usuário"));
+                .orElseThrow(() -> new IllegalArgumentException("Deck nao encontrado para este usuario"));
     }
 
     @Override
@@ -46,8 +49,27 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
         if (quantity <= 0) throw new IllegalArgumentException("Quantidade deve ser > 0");
 
         Deck deck = getDeck(ownerId, deckId);
+        deckValidator.validateAddCard(deck, cardId, quantity, DeckZone.MAIN);
+
         for (int i = 0; i < quantity; i++) {
             deck.addToMain(cardId);
+        }
+        return deckRepository.save(deck);
+    }
+
+    @Override
+    public Deck addCardToZone(String ownerId, Long deckId, Long cardId, int quantity, DeckZone zone) {
+        if (quantity <= 0) throw new IllegalArgumentException("Quantidade deve ser > 0");
+
+        Deck deck = getDeck(ownerId, deckId);
+        deckValidator.validateAddCard(deck, cardId, quantity, zone);
+
+        for (int i = 0; i < quantity; i++) {
+            switch (zone) {
+                case MAIN -> deck.addToMain(cardId);
+                case EXTRA -> deck.addToExtra(cardId);
+                case SIDE -> deck.addToSide(cardId);
+            }
         }
         return deckRepository.save(deck);
     }
@@ -57,6 +79,8 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
         Deck deck = getDeck(ownerId, deckId);
 
         DeckZone deckZone = DeckZone.valueOf(zone.toUpperCase());
+        deckValidator.validateRemoveCard(deck, cardId, deckZone);
+
         switch (deckZone) {
             case MAIN  -> deck.removeFromMain(cardId);
             case EXTRA -> deck.removeFromExtra(cardId);
@@ -98,12 +122,16 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
             enriched = List.of();
         }
 
-        return DeckView.from(deck, enriched);
+        DeckView view = DeckView.from(deck, enriched);
+
+        view.setValidation(deckValidator.validateDeck(deck));
+
+        return view;
     }
 
     @Override
     public void deleteDeck(String ownerId, Long deckId) {
-        getDeck(ownerId, deckId); // valida que o deck existe e pertence ao owner
+        getDeck(ownerId, deckId);
         deckRepository.deleteByIdAndOwnerId(deckId, ownerId);
     }
 }

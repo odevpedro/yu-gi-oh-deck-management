@@ -3,6 +3,7 @@ package com.odevpedro.yugiohcollections.deck.adapter.in.rest;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.application.service.DeckApplicationService;
 import com.odevpedro.yugiohcollections.deck.application.service.DeckExportService;
+import com.odevpedro.yugiohcollections.deck.domain.model.DeckZone;
 import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -53,7 +54,9 @@ public class DeckController {
     public DeckView addCard(Authentication auth,
                             @PathVariable Long deckId,
                             @RequestBody AddCardRequest body) {
-        return DeckView.simple(service.addCard((String) auth.getDetails(), deckId, body.cardId(), body.quantity()));
+        String userId = (String) auth.getDetails();
+        DeckZone zone = body.zone() != null ? DeckZone.valueOf(body.zone().toUpperCase()) : DeckZone.MAIN;
+        return DeckView.simple(service.addCardToZone(userId, deckId, body.cardId(), body.quantity(), zone));
     }
 
     @DeleteMapping(ApiRoutes.DECKS_CARDS)
@@ -86,6 +89,6 @@ public class DeckController {
     }
 
     public record CreateDeckRequest(String name) {}
-    public record AddCardRequest(Long cardId, int quantity) {}
+    public record AddCardRequest(Long cardId, int quantity, String zone) {}
     public record RemoveCardRequest(Long cardId, String zone) {}
 }
