@@ -32,6 +32,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.hibernate.orm:hibernate-spatial:6.2.13.Final'
     implementation 'org.flywaydb:flyway-core'

@@ -9,10 +9,13 @@
 
 <!-- Atualize este indice a cada nova feature adicionada -->
 
-- [Visao Geral da Arquitetura](#visao-geral-da-arquitetura)
+- [Visão Geral da Arquitetura](#visao-geral-da-arquitetura)
 - [Convencoes deste Documento](#convencoes-deste-documento)
 - [ApiRoutes — Centralizacao de Rotas](#apiroutes--centralizacao-de-rotas)
-- [Feature: Autenticacao JWT](#feature-autenticacao-jwt)
+- [Feature: Autenticacao JWT com Refresh Token](#feature-autenticacao-jwt-com-refresh-token)
+- [Feature: Logout e Revogacao de Tokens](#feature-logout-e-revogacao-de-tokens)
+- [Feature: Validacao de Token via Blacklist](#feature-validacao-de-token-via-blacklist)
+- [Feature: Validacao de Regras de Deck](#feature-validacao-de-regras-de-deck)
 - [Feature: Gerenciamento de Decks](#feature-gerenciamento-de-decks)
 - [Feature: Busca de Cartas](#feature-busca-de-cartas)
 - [Feature: Criacao de Cartas Customizadas](#feature-criacao-de-cartas-customizadas)
@@ -164,20 +167,20 @@ public static final String PROXY_BY_ID = PROXY_BASE + ID;
 ---
 ---
 
-# Feature: Autenticacao JWT
+# Feature: Autenticacao JWT com Refresh Token
 
-> **Versao:** 1.0.0
-> **Implementada em:** 2024
+> **Versao:** 2.0.0
+> **Implementada em:** 2026-04-28
 > **Status:** Concluida
 
 ---
 
 ## Resumo
 
-Sistema de autenticacao que emite e valida tokens JWT para autenticacao dos servicos. O token carrega `userId` e `role`, propagados pelo `JwtAuthFilter` do `shared-domain`.
+Sistema de autenticacao com dois tipos de tokens: access token (curto prazo, 1 hora) e refresh token (longo prazo, 7 dias). O refresh token permite renovacao do access token sem necessidade de novo login.
 
-**Motivacao:** Cada servico precisa validar tokens de forma independente.
-**Resultado:** Autenticacao stateless via JWT, sem chamada ao auth-service a cada requisicao.
+**Motivacao:** Access tokens curtos aumentam a seguranca, mas causam fricao ao usuario. Refresh tokens resolvem esse problema.
+**Resultado:** Login una vez, renovacao automatica de tokens por ate 7 dias.
 
 ---
 
@@ -187,8 +190,45 @@ Sistema de autenticacao que emite e valida tokens JWT para autenticacao dos serv
 
 - **Tipo:** HTTP REST
 - **Arquivo:** `auth-service/src/main/java/com/odevpedro/yugiohcollections/auth/adapter/in/rest/AuthController.java`
-- **Rotas:** `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
+- **Rotas:** `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`
 - **Autenticacao:** Publica
+
+### 2. Validação de Entrada
+
+| Campo | Tipo | Obrigatorio | Regra de validacao |
+|-------|------|-------------|---------------------|
+| username | String | Sim | 3-50 caracteres |
+| email | String | Sim | Formato de email valido |
+| password | String | Sim | Minimo 8 caracteres |
+| refreshToken | String | Sim | Token valido existente |
+
+### 3. Regras de Negocio
+
+| Regra | Descricao | Localizacao no Codigo |
+|-------|-----------|----------------------|
+| Access Token | Valido por 1 hora | `JwtService.generateToken()` |
+| Refresh Token | Valido por 7 dias | `JwtService.generateRefreshToken()` |
+| Um refresh token por vez | Refresh tokens anteriores sao revocados | `RefreshTokenService` |
+
+### 4. Integracoes
+
+| Servico | Operacao | Timeout | Retry |
+|---------|----------|---------|-------|
+| RefreshTokenRepository | Persistencia de tokens | - | - |
+
+### 5. Resposta Final
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "refreshToken": "a8f3b2c1d4e5f6...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600000,
+  "username": "player1",
+  "email": "player1@yugioh.com",
+  "id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
 
 ---
 
@@ -200,21 +240,308 @@ sequenceDiagram
     participant AuthController
     participant AuthService
     participant JwtService
-    participant JwtAuthFilter
+    participant RefreshTokenService
+    participant UserRepository
     participant DB
 
     Client->>AuthController: POST /auth/login
     AuthController->>AuthService: login(request)
-    AuthService->>DB: Valida credenciais
-    DB-->>AuthService: usuario encontrado
-    AuthService->>JwtService: generateToken(userId, username)
-    JwtService-->>AuthService: token JWT
-    AuthService-->>AuthController: AuthResponse(token)
-    AuthController-->>Client: 200 OK + token
+    AuthService->>UserRepository: findByUsername(username)
+    UserRepository->>DB: SELECT user
+    DB-->>UserRepository: user data
+    UserRepository-->>AuthService: user entity
+    AuthService->>JwtService: generateToken(userId, username, role)
+    JwtService-->>AuthService: accessToken
+    AuthService->>JwtService: generateRefreshToken(userId, username, role)
+    JwtService-->>AuthService: refreshToken
+    AuthService->>RefreshTokenService: createRefreshToken(user)
+    RefreshTokenService->>DB: save refresh_token
+    DB-->>RefreshTokenService: saved
+    RefreshTokenService-->>AuthService: refresh token entity
+    AuthService-->>AuthController: AuthResponse
+    AuthController-->>Client: 200 OK + tokens
 
-    Client->>JwtAuthFilter: GET /decks (com Authorization header)
-    JwtAuthFilter->>JwtAuthFilter: Extrai e valida token
-    JwtAuthFilter-->>Client: 401 Unauthorized
+    Client->>AuthController: POST /auth/refresh
+    AuthController->>AuthService: refreshToken(request)
+    AuthService->>RefreshTokenService: validateRefreshToken(token)
+    RefreshTokenService->>DB: find by token
+    DB-->>RefreshTokenService: refresh token entity
+    RefreshTokenService-->>AuthService: validated token
+    AuthService->>JwtService: generateToken(userId, username, role)
+    AuthService->>JwtService: generateRefreshToken(userId, username, role)
+    AuthService->>RefreshTokenService: revokeRefreshToken(oldToken)
+    AuthService->>RefreshTokenService: createRefreshToken(user)
+    AuthService-->>AuthController: AuthResponse
+    AuthController-->>Client: 200 OK + new tokens
+```
+
+---
+---
+
+# Feature: Logout e Revogacao de Tokens
+
+> **Versao:** 2.0.0
+> **Implementada em:** 2026-04-28
+> **Status:** Concluida
+
+---
+
+## Resumo
+
+Sistema de logout que invalida tanto o access token quanto o refresh token do usuario, impedindo reutilizacao.
+
+**Motivacao:** Quando um usuario faz logout, os tokens emitidos devem ser invalidados imediatamente.
+**Resultado:** Tokens sao adicionados a uma blacklist (access) ou revogados (refresh) ao fazer logout.
+
+---
+
+## Fluxo Principal
+
+### 1. Ponto de Entrada
+
+- **Tipo:** HTTP REST
+- **Arquivo:** `auth-service/src/main/java/com/odevpedro/yugiohcollections/auth/adapter/in/rest/AuthController.java`
+- **Rota:** `POST /auth/logout`
+- **Autenticacao:** Bearer token (access token)
+
+### 2. Regras de Negocio
+
+| Regra | Descricao | Localizacao no Codigo |
+|-------|-----------|----------------------|
+| Access token blacklist | Token e adicionado a blacklist com hash SHA-256 | `TokenBlacklistService` |
+| Refresh token revoke | Refresh token e marcado como revogado | `RefreshTokenService` |
+| Blacklist expira | Entradas blacklist expiram quando token original expira | `TokenBlacklistEntity` |
+
+### 3. Integracoes
+
+| Servico | Operacao | Descricao |
+|---------|----------|-----------|
+| TokenBlacklistRepository | save() | Adiciona token a blacklist |
+| RefreshTokenRepository | revokeAllByUserId() | Revoga todos os refresh tokens do usuario |
+
+---
+
+## Diagrama de Sequencia
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant AuthController
+    participant AuthService
+    participant TokenBlacklistService
+    participant RefreshTokenService
+    participant DB
+
+    Client->>AuthController: POST /auth/logout
+    Note over Client: Headers: Authorization: Bearer {accessToken}
+    Note over Client: X-Refresh-Token: {refreshToken}
+    AuthController->>AuthService: logout(accessToken, refreshToken)
+    AuthService->>TokenBlacklistService: blacklistToken(accessToken)
+    TokenBlacklistService->>TokenBlacklistService: hashToken(token)
+    TokenBlacklistService->>DB: save blacklist_entry
+    DB-->>TokenBlacklistService: saved
+    TokenBlacklistService-->>AuthService: done
+    AuthService->>RefreshTokenService: revokeRefreshToken(refreshToken)
+    RefreshTokenService->>DB: UPDATE refresh_token SET revoked = true
+    DB-->>RefreshTokenService: updated
+    RefreshTokenService-->>AuthService: done
+    AuthService-->>AuthController: void
+    AuthController-->>Client: 204 No Content
+```
+
+---
+---
+
+# Feature: Validacao de Token via Blacklist
+
+> **Versao:** 2.0.0
+> **Implementada em:** 2026-04-28
+> **Status:** Concluida
+
+---
+
+## Resumo
+
+O `JwtAuthFilter` nos servicos verifica se o token esta na blacklist antes de permitir acesso, chamando o `auth-service` via Feign.
+
+**Motivacao:** Token pode ser invalidado apos emissao (logout), entao deve ser verificado em cada requisicao.
+**Resultado:** Servicos verificam token via Feign client antes de permitir acesso.
+
+---
+
+## Fluxo Principal
+
+### 1. Ponto de Entrada
+
+- **Tipo:** Filtro Spring (OncePerRequestFilter)
+- **Arquivo:** `shared-domain/src/main/java/com/odevpedro/yugiohcollections/shared/security/JwtAuthFilter.java`
+- **Autenticacao:** N/A (e o filtro que autentica)
+
+### 2. Regras de Negocio
+
+| Regra | Descricao | Localizacao no Codigo |
+|-------|-----------|----------------------|
+| Skip auth paths | Rotas publicas pulam validacao | `shouldNotFilter()` |
+| Skip blacklist | auth-service nao valida blacklist de si mesmo | `skipBlacklistCheck` |
+| Token hash | Tokens sao verificados por hash SHA-256 | `TokenBlacklistService.hashToken()` |
+
+### 3. Integracoes
+
+| Servico | Operacao | Timeout | Retry |
+|---------|----------|---------|-------|
+| auth-service | GET /internal/validate | 5s | 3 |
+
+---
+
+## Diagrama de Sequencia
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant JwtAuthFilter
+    participant TokenValidationClient
+    participant AuthService
+    participant TokenBlacklistRepository
+    participant DB
+
+    Client->>JwtAuthFilter: GET /decks
+    Note over Client: Authorization: Bearer {token}
+    JwtAuthFilter->>JwtAuthFilter: shouldNotFilter(path)?
+    JwtAuthFilter->>JwtAuthFilter: parse token
+    JwtAuthFilter->>TokenValidationClient: validateToken(authHeader)
+    TokenValidationClient->>AuthService: GET /internal/validate
+    AuthService->>TokenBlacklistRepository: existsByTokenHash(hash)
+    TokenBlacklistRepository->>DB: SELECT blacklist
+    DB-->>TokenBlacklistRepository: result
+    TokenBlacklistRepository-->>AuthService: boolean
+    AuthService-->>TokenValidationClient: {"valid": true}
+    TokenValidationClient-->>JwtAuthFilter: validation result
+    JwtAuthFilter->>JwtAuthFilter: set SecurityContext
+    JwtAuthFilter->>DeckController: proceed
+    DeckController-->>Client: 200 OK + decks
+```
+
+---
+---
+
+# Feature: Validacao de Regras de Deck
+
+> **Versao:** 1.0.0
+> **Implementada em:** 2026-04-28
+> **Status:** Concluida
+
+---
+
+## Resumo
+
+Validacao das regras oficiais do Yu-Gi-Oh! TCG para composicao de decks, impedindo que o usuario adicione cartas que violem as regras do jogo.
+
+**Motivacao:** Garantir que decks possam ser usados em torneios e jogos online.
+**Resultado:** Erros claros sao retornados quando regras sao violadas.
+
+---
+
+## Regras Implementadas
+
+| Regra | Valor | Descricao |
+|-------|-------|-----------|
+| Main Deck minimo | 40 | Minimo de cartas no Main Deck |
+| Main Deck maximo | 60 | Maximo de cartas no Main Deck |
+| Extra Deck maximo | 15 | Maximo de cartas no Extra Deck |
+| Side Deck maximo | 15 | Maximo de cartas no Side Deck |
+| Limite de copias | 3 | Maximo de 3 copias de cada carta |
+
+---
+
+## Fluxo Principal
+
+### 1. Ponto de Entrada
+
+- **Tipo:** HTTP REST
+- **Arquivo:** `deck-service/src/main/java/com/odevpedro/yugiohcollections/deck/adapter/in/rest/DeckController.java`
+- **Rota:** `POST /decks/{deckId}/cards`
+- **Autenticacao:** Bearer token
+
+### 2. Validacao de Entrada
+
+| Campo | Tipo | Obrigatorio | Regra de validacao |
+|-------|------|-------------|---------------------|
+| cardId | Long | Sim | ID valido de carta |
+| quantity | int | Sim | > 0 e <= 3 por carta |
+| zone | String | Nao | MAIN, EXTRA ou SIDE (default: MAIN) |
+
+### 3. Regras de Negocio
+
+| Regra | Descricao | Localizacao no Codigo |
+|-------|-----------|----------------------|
+| Copias por carta | Max 3 copias de qualquer carta | `DeckValidator.validateAddCard()` |
+| Main Deck size | 40-60 cartas | `DeckValidator.validateAddCard()` |
+| Extra Deck size | Max 15 cartas | `DeckValidator.validateAddCard()` |
+| Side Deck size | Max 15 cartas | `DeckValidator.validateAddCard()` |
+
+### 4. Resposta de Erro
+
+```json
+{
+  "statusCode": 400,
+  "error": "DECK_VALIDATION_FAILED",
+  "message": "Regras do deck violadas",
+  "violations": [
+    "Carta ID 46986414: nao e permitido ter mais de 3 copias no deck (atual: 2, tentando adicionar: 2)",
+    "Main Deck nao pode ter mais de 60 cartas (atual: 58, apos adicionar: 60)"
+  ],
+  "timestamp": "2026-04-28T12:00:00"
+}
+```
+
+### 5. Resposta do Endpoint /full
+
+```json
+{
+  "id": 1,
+  "name": "Meu Deck",
+  "mainDeckSize": 45,
+  "extraDeckSize": 10,
+  "sideDeckSize": 15,
+  "isValid": true,
+  "validationErrors": [],
+  "cards": [...]
+}
+```
+
+---
+
+## Diagrama de Sequencia
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant DeckController
+    participant DeckApplicationService
+    participant DeckValidator
+    participant DeckRepository
+    participant DB
+
+    Client->>DeckController: POST /decks/1/cards
+    Note over Client: {"cardId": 123, "quantity": 3, "zone": "MAIN"}
+    DeckController->>DeckApplicationService: addCardToZone(ownerId, deckId, cardId, quantity, zone)
+    DeckApplicationService->>DeckValidator: validateAddCard(deck, cardId, quantity, zone)
+    DeckValidator->>DeckValidator: countCardCopies(deck, cardId)
+    DeckValidator->>DeckValidator: getZoneSize(deck, zone)
+    alt validacao OK
+        DeckValidator-->>DeckApplicationService: OK
+        DeckApplicationService->>Deck: addToMain(cardId)
+        DeckApplicationService->>DeckRepository: save(deck)
+        DeckRepository->>DB: UPDATE deck
+        DB-->>DeckRepository: saved
+        DeckRepository-->>DeckApplicationService: deck updated
+        DeckApplicationService-->>DeckController: DeckView
+        DeckController-->>Client: 200 OK
+    else validacao falhou
+        DeckValidator-->>DeckApplicationService: DeckValidationException
+        DeckApplicationService-->>DeckController: 400 Bad Request
+        DeckController-->>Client: {"error": "DECK_VALIDATION_FAILED", "violations": [...]}
+    end
 ```
 
 ---

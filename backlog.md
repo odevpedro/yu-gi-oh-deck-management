@@ -9,7 +9,7 @@
 
 Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com arquitetura hexagonal em microservicos independentes que se comunicam via OpenFeign e Kafka.
 
-**Versao atual:** `0.2.0`
+**Versao atual:** `0.3.0`
 **Repositorio:** [github.com/odevpedro/yu-gi-oh-deck-management](https://github.com/odevpedro/yu-gi-oh-deck-management)
 **Stack principal:** Java 17 + Spring Boot 3.2 + Gradle + PostgreSQL + Kafka
 
@@ -49,7 +49,7 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 |----|---------|------------|------------|
 | AUTH-001 | Autenticacao centralizada com JWT e refresh token | P1 | L |
 | AUTH-002 | Logout e revogacao de tokens | P2 | M |
-| AUTH-003 | Filtro JWT compartilhado via shared-domain | P1 | M |
+| AUTH-003 | Filtro JWT compartilhado via shared-domain com blacklist | P1 | M |
 
 ### Core Features
 
@@ -94,6 +94,15 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 |----|---------|------|------------|
 | ARCH-001 | Arquitetura Hexagonal (Ports & Adapters) | 2024 | hex-arch |
 | ARCH-002 | Centralizacao de rotas em ApiRoutes | 2026-04-28 | - |
+| ARCH-003 | Filtro JWT compartilhado via shared-domain com blacklist | 2026-04-28 | JwtAuthFilter |
+
+### Features de Autenticacao
+
+| ID | Feature | Data | Referencia |
+|----|---------|------|------------|
+| AUTH-001 | JWT com access token e refresh token | 2026-04-28 | JwtService, RefreshTokenService |
+| AUTH-002 | Logout com blacklist de tokens | 2026-04-28 | TokenBlacklistService, TokenValidationController |
+| AUTH-003 | Validacao de token via Feign (blacklist check) | 2026-04-28 | TokenValidationClient, JwtAuthFilter |
 
 ### Servicos Implementados
 
@@ -115,6 +124,8 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 | DECK-002 | Adicionar/remover cartas do deck | 2024 | DeckController |
 | DECK-003 | Export de deck no formato .ydk | 2024 | DeckExportService |
 | DECK-004 | Busca de cartas via YGOPRODeck API | 2024 | CardController |
+| DECK-005 | Validacao de regras de deck Yu-Gi-Oh! | 2026-04-28 | DeckValidator, DeckApplicationService |
+| DECK-006 | Retorno de validacao no endpoint /decks/{id}/full | 2026-04-28 | DeckView |
 
 ### Features de Cards Customizados
 
@@ -160,5 +171,6 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 
 | Versao | Data | Principais entregas |
 |--------|------|---------------------|
+| `0.3.0` | 2026-04-28 | JWT com refresh token, logout com blacklist, validacao via Feign |
 | `0.2.0` | 2026-04-28 | Centralizacao de rotas em ApiRoutes, community-service e auth-service implementados |
 | `0.1.0` | 2024 | MVP com card-service, deck-service, proxy-service, card-creator-service |

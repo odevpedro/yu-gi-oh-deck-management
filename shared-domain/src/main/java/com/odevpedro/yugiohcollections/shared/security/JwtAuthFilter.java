@@ -8,6 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,14 +18,22 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProperties jwtProperties;
+    private final TokenValidationClient tokenValidationClient;
+    private final boolean skipBlacklistCheck;
 
-    public JwtAuthFilter(JwtProperties jwtProperties) {
+    public JwtAuthFilter(JwtProperties jwtProperties,
+                         @Value("${jwt.skip-blacklist-check:false}") boolean skipBlacklistCheck,
+                         TokenValidationClient tokenValidationClient) {
         this.jwtProperties = jwtProperties;
+        this.skipBlacklistCheck = skipBlacklistCheck;
+        this.tokenValidationClient = tokenValidationClient;
     }
 
     @Override
@@ -41,7 +50,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String token = authHeader.substring(7).trim();
-            System.out.println("Token recebido: [" + token + "]");
+
+            if (!skipBlacklistCheck) {
+                Map<String, Object> validationResult = tokenValidationClient.validateToken(authHeader);
+                Boolean isValid = (Boolean) validationResult.get("valid");
+                if (isValid != null && !isValid) {
+                    log.warn("Token blacklisted or invalid: {}", validationResult.get("reason"));
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+            }
 
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes()))
@@ -53,25 +71,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String username = claims.getSubject();
             String role = claims.get("role", String.class);
 
-            System.out.println("UserId extraído: [" + userId + "]");
-            System.out.println("Role extraída: [" + role + "]");
-
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     username,
                     null,
                     List.of(new SimpleGrantedAuthority("ROLE_" + role))
             );
 
-            auth.setDetails(userId); // userId acessível via SecurityContext
+            auth.setDetails(userId);
 
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (Exception e) {
-            System.out.println("JwtAuthFilter error: " + e.getMessage());
+            log.error("JwtAuthFilter error: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/auth/register") ||
+               path.startsWith("/auth/login") ||
+               path.startsWith("/auth/refresh") ||
+               path.startsWith("/internal/") ||
+               path.startsWith("/actuator/");
     }
 }

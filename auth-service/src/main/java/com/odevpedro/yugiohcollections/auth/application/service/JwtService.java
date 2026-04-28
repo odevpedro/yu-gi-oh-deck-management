@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -32,6 +31,18 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateRefreshToken(UUID userId, String username, String role) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("userId", userId.toString())
+                .claim("role", role)
+                .claim("type", "refresh")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpirationMs()))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public UUID extractUserId(String token) {
         return UUID.fromString(getClaims(token).get("userId", String.class));
     }
@@ -44,6 +55,20 @@ public class JwtService {
         return getClaims(token).get("role", String.class);
     }
 
+    public boolean isRefreshToken(String token) {
+        Claims claims = getClaims(token);
+        return "refresh".equals(claims.get("type", String.class));
+    }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Claims claims = getClaims(token);
+            return claims.getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getKey())
@@ -54,5 +79,9 @@ public class JwtService {
 
     private Key getKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+    }
+
+    public String getSecret() {
+        return jwtProperties.getSecret();
     }
 }

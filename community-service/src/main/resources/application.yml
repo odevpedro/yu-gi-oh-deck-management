@@ -28,6 +28,11 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+auth:
+  service:
+    url: http://localhost:8086
+
 jwt:
   secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
-  expiration-ms: 3600000 # 1 hora
+  expiration-ms: 3600000
+  skip-blacklist-check: false

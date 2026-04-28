@@ -110,25 +110,43 @@ adapter/out/         # Persistencia, Feign, Kafka, API externa (saida)
 
 ## Como Rodar Localmente
 
-### Pre-requisitos
-
-- Java 17+
-- Docker e Docker Compose
-- Gradle 7.5+
-
-### Setup
+### Opção 1: Scripts Automatizados (Recomendado)
 
 ```bash
 # 1. Clone o repositorio
 git clone https://github.com/odevpedro/yu-gi-oh-deck-management.git && cd yu-gi-oh-deck-management
 
-# 2. Suba a infraestrutura
+# 2. Inicia tudo (infra + servicos)
+./run.sh start
+
+# 3. Testa a API automaticamente (opcional)
+./test-api.sh
+
+# 4. Para todos os servicos
+./run.sh stop
+```
+
+Comandos do `./run.sh`:
+| Comando | Descricao |
+|---------|-----------|
+| `./run.sh start` | Sobe infraestrutura + todos os servicos |
+| `./run.sh status` | Mostra status dos servicos |
+| `./run.sh logs` | Mostra logs de todos os servicos |
+| `./run.sh stop` | Para todos os servicos |
+| `./run.sh restart` | Reinicia todos os servicos |
+| `./run.sh infra` | Sobe apenas infraestrutura (Docker) |
+| `./run.sh clean` | Para servicos e remove logs |
+
+### Opção 2: Manual
+
+```bash
+# 1. Suba a infraestrutura
 docker compose up -d
 
-# 3. Build o projeto
+# 2. Build o projeto
 ./gradlew build
 
-# 4. Inicie os servicos desejados
+# 3. Inicie os servicos desejados (em terminais separados)
 ./gradlew :card-service:bootRun
 ./gradlew :deck-service:bootRun
 ./gradlew :auth-service:bootRun
@@ -163,7 +181,9 @@ Todas as rotas sao centralizadas em `ApiRoutes` (shared-domain).
 | Metodo | Rota | Descricao | Auth |
 |--------|------|-----------|------|
 | POST | `/auth/register` | Registro de novo usuario | |
-| POST | `/auth/login` | Autenticacao e geracao de token | |
+| POST | `/auth/login` | Autenticacao e geracao de tokens | |
+| POST | `/auth/refresh` | Renovacao de access token via refresh token | |
+| POST | `/auth/logout` | Revogacao de tokens (logout) | Bearer |
 | GET | `/auth/me` | Retorna dados do usuario logado | Bearer |
 
 ### card-service (8080)
@@ -181,11 +201,17 @@ Todas as rotas sao centralizadas em `ApiRoutes` (shared-domain).
 | POST | `/decks` | Cria um novo deck | Bearer |
 | GET | `/decks` | Lista decks do usuario | Bearer |
 | GET | `/decks/{deckId}` | Busca deck por ID | Bearer |
-| GET | `/decks/{deckId}/full` | Retorna deck com dados completos das cartas | Bearer |
-| POST | `/decks/{deckId}/cards` | Adiciona carta ao deck | Bearer |
+| GET | `/decks/{deckId}/full` | Retorna deck com dados completos das cartas + validacao | Bearer |
+| POST | `/decks/{deckId}/cards` | Adiciona carta ao deck (com validacao) | Bearer |
 | DELETE | `/decks/{deckId}/cards` | Remove carta do deck | Bearer |
 | DELETE | `/decks/{deckId}` | Remove deck | Bearer |
 | GET | `/decks/{deckId}/export` | Exporta deck no formato `.ydk` | Bearer |
+
+**Regras de Deck (Yu-Gi-Oh!):**
+- Main Deck: 40-60 cartas
+- Extra Deck: max 15 cartas
+- Side Deck: max 15 cartas
+- Max 3 copias de cada carta
 
 ### card-creator-service (8083)
 

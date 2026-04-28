@@ -2,6 +2,7 @@ package com.odevpedro.yugiohcollections.auth.adapter.in.rest;
 
 import com.odevpedro.yugiohcollections.auth.application.dto.AuthResponse;
 import com.odevpedro.yugiohcollections.auth.application.dto.LoginRequest;
+import com.odevpedro.yugiohcollections.auth.application.dto.RefreshTokenRequest;
 import com.odevpedro.yugiohcollections.auth.application.dto.RegisterRequest;
 import com.odevpedro.yugiohcollections.auth.application.service.AuthService;
 import com.odevpedro.yugiohcollections.auth.application.service.JwtService;
@@ -29,6 +30,19 @@ public class AuthController {
     @PostMapping(ApiRoutes.AUTH_LOGIN)
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @RequestHeader(value = "Authorization", required = false) String accessToken,
+            @RequestHeader(value = "X-Refresh-Token", required = false) String refreshToken) {
+        authService.logout(accessToken, refreshToken);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(ApiRoutes.AUTH_ME)

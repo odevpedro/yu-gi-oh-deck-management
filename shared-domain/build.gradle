@@ -17,7 +17,11 @@ dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-security:3.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-web:3.2.0'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux:3.2.0'
     implementation 'org.springframework.boot:spring-boot-autoconfigure:3.2.0'
+
+    // OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-openfeign-core:4.1.0'
 
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -28,4 +32,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:3.2.0'
+
+    // Logging
+    compileOnly 'org.slf4j:slf4j-api:2.0.9'
 }

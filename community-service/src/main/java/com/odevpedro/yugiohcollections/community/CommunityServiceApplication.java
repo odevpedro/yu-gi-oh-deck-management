@@ -4,6 +4,7 @@ import com.odevpedro.yugiohcollections.shared.config.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = {
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 })
 @EnableScheduling
 @EnableConfigurationProperties(JwtProperties.class)
+@EnableFeignClients(basePackages = "com.odevpedro.yugiohcollections.shared.security")
 
 public class CommunityServiceApplication {
     public static void main(String[] args) {

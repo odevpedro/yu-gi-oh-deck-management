@@ -24,3 +24,5 @@ spring:
 jwt:
   secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
   expiration-ms: 3600000 # 1 hora
+  refresh-expiration-ms: 604800000 # 7 dias
+  skip-blacklist-check: true
