@@ -15,6 +15,9 @@ public final class ApiRoutes {
     // Decks
     public static final String DECKS_BASE = "/decks";
     public static final String DECKS_BY_ID = DECKS_BASE + ID;
+    public static final String DECKS_FULL = "/decks/{deckId}/full";
+    public static final String DECKS_CARDS = "/decks/{deckId}/cards";
+    public static final String DECKS_EXPORT = "/decks/{deckId}/export";
 
     // Custom Cards
     public static final String CUSTOM_CARDS_BASE = "/custom-cards";
@@ -22,7 +25,20 @@ public final class ApiRoutes {
 
     // Cards
     public static final String CARDS_BASE = "/cards";
-    public static final String CARDS_BY_ID = ID;
     public static final String CARDS_INTERNAL = "/internal";
     public static final String CARDS_INTERNAL_BY_ID = CARDS_INTERNAL + ID;
+
+    // Players
+    public static final String PLAYERS_BASE = "/players";
+    public static final String PLAYERS_ME_STATUS = PLAYERS_BASE + "/me/status";
+    public static final String PLAYERS_NEARBY = PLAYERS_BASE + "/nearby";
+
+    // Challenges
+    public static final String CHALLENGES_BASE = "/challenges";
+    public static final String CHALLENGES_BY_ID = CHALLENGES_BASE + ID;
+    public static final String CHALLENGES_PENDING = CHALLENGES_BASE + "/pending";
+
+    // Proxy
+    public static final String PROXY_BASE = "/proxy";
+    public static final String PROXY_BY_ID = PROXY_BASE + ID;
 }

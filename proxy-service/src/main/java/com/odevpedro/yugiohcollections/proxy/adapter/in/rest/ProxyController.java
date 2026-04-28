@@ -1,6 +1,7 @@
 package com.odevpedro.yugiohcollections.proxy.adapter.in.rest;
 
 import com.odevpedro.yugiohcollections.proxy.application.service.ProxyPdfService;
+import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -11,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/proxy")
+@RequestMapping(ApiRoutes.PROXY_BASE)
 @RequiredArgsConstructor
 public class ProxyController {
 
     private final ProxyPdfService proxyPdfService;
 
-    @GetMapping("/{deckId}")
+    @GetMapping(ApiRoutes.PROXY_BY_ID)
     public ResponseEntity<byte[]> generateProxy(@PathVariable Long deckId) {
         byte[] pdf = proxyPdfService.generateProxyPdf(deckId);
 

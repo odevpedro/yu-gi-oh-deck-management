@@ -2,6 +2,7 @@ package com.odevpedro.yugiohcollections.community.adapter.in.rest;
 
 import com.odevpedro.yugiohcollections.community.application.service.ChallengeService;
 import com.odevpedro.yugiohcollections.community.domain.model.Challenge;
+import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/challenges")
+@RequestMapping(ApiRoutes.CHALLENGES_BASE)
 @RequiredArgsConstructor
 public class ChallengeController {
 
@@ -25,7 +26,7 @@ public class ChallengeController {
                 challengerId, body.targetId(), body.challengerDeckId(), body.message()));
     }
 
-    @PatchMapping("/{challengeId}")
+    @PatchMapping(ApiRoutes.CHALLENGES_BY_ID)
     public ResponseEntity<Challenge> respond(Authentication auth,
                                              @PathVariable UUID challengeId,
                                              @RequestBody RespondChallengeRequest body) {
@@ -36,7 +37,7 @@ public class ChallengeController {
         };
     }
 
-    @GetMapping("/pending")
+    @GetMapping(ApiRoutes.CHALLENGES_PENDING)
     public ResponseEntity<List<Challenge>> pending(Authentication auth) {
         UUID targetId = UUID.fromString((String) auth.getDetails());
         return ResponseEntity.ok(challengeService.findPending(targetId));

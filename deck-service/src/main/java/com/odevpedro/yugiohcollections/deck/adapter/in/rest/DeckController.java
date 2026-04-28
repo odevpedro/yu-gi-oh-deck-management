@@ -3,6 +3,7 @@ package com.odevpedro.yugiohcollections.deck.adapter.in.rest;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.application.service.DeckApplicationService;
 import com.odevpedro.yugiohcollections.deck.application.service.DeckExportService;
+import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
-@RequestMapping("/decks")
+@RequestMapping(ApiRoutes.DECKS_BASE)
 @RequiredArgsConstructor
 public class DeckController {
 
@@ -36,40 +37,40 @@ public class DeckController {
                 .toList();
     }
 
-    @GetMapping("/{deckId}")
+    @GetMapping(ApiRoutes.DECKS_BY_ID)
     public DeckView get(Authentication auth,
                         @PathVariable Long deckId) {
         return DeckView.simple(service.getDeck((String) auth.getDetails(), deckId));
     }
 
-    @GetMapping("/{deckId}/full")
+    @GetMapping(ApiRoutes.DECKS_FULL)
     public DeckView getFull(Authentication auth,
                             @PathVariable Long deckId) {
         return service.getDeckWithCards((String) auth.getDetails(), deckId);
     }
 
-    @PostMapping("/{deckId}/cards")
+    @PostMapping(ApiRoutes.DECKS_CARDS)
     public DeckView addCard(Authentication auth,
                             @PathVariable Long deckId,
                             @RequestBody AddCardRequest body) {
         return DeckView.simple(service.addCard((String) auth.getDetails(), deckId, body.cardId(), body.quantity()));
     }
 
-    @DeleteMapping("/{deckId}/cards")
+    @DeleteMapping(ApiRoutes.DECKS_CARDS)
     public DeckView removeCard(Authentication auth,
                                @PathVariable Long deckId,
                                @RequestBody RemoveCardRequest body) {
         return DeckView.simple(service.removeCard((String) auth.getDetails(), deckId, body.cardId(), body.zone()));
     }
 
-    @DeleteMapping("/{deckId}")
+    @DeleteMapping(ApiRoutes.DECKS_BY_ID)
     public ResponseEntity<Void> deleteDeck(Authentication auth,
                                            @PathVariable Long deckId) {
         service.deleteDeck((String) auth.getDetails(), deckId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{deckId}/export")
+    @GetMapping(ApiRoutes.DECKS_EXPORT)
     public ResponseEntity<byte[]> exportDeck(@PathVariable Long deckId,
                                              Authentication auth) {
         String userId  = (String) auth.getDetails();

@@ -3,6 +3,7 @@ package com.odevpedro.yugiohcollections.community.adapter.in.rest;
 import com.odevpedro.yugiohcollections.community.application.service.PlayerService;
 import com.odevpedro.yugiohcollections.community.domain.model.DuelStatus;
 import com.odevpedro.yugiohcollections.community.domain.model.Player;
+import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/players")
+@RequestMapping(ApiRoutes.PLAYERS_BASE)
 @RequiredArgsConstructor
 public class PlayerController {
 
@@ -22,13 +23,11 @@ public class PlayerController {
     public ResponseEntity<Player> registerOrUpdate(Authentication auth,
                                                    @RequestBody RegisterPlayerRequest body) {
         UUID userId = UUID.fromString((String) auth.getDetails());
-        System.out.println("tá chegando aqui essa porra");
         return ResponseEntity.ok(playerService.registerOrUpdate(
                 userId, body.displayName(), body.latitude(), body.longitude(), body.platforms()));
-
     }
 
-    @PatchMapping("/me/status")
+    @PatchMapping(ApiRoutes.PLAYERS_ME_STATUS)
     public ResponseEntity<Void> updateStatus(Authentication auth,
                                              @RequestBody UpdateStatusRequest body) {
         UUID userId = UUID.fromString((String) auth.getDetails());
@@ -36,7 +35,7 @@ public class PlayerController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/nearby")
+    @GetMapping(ApiRoutes.PLAYERS_NEARBY)
     public ResponseEntity<List<Player>> findNearby(@RequestParam double lat,
                                                    @RequestParam double lng,
                                                    @RequestParam double radiusKm,
