@@ -240,6 +240,44 @@ public record RespondChallengeRequest(
 
 ---
 
+### FASE 0B — Configuracao Critica (impede comunicacao entre servicos)
+
+---
+
+#### `[ ]` CONFIG-001 — CORS em todos os servicos
+
+**Descricao:** Nenhum servico tem CORS configurado. O frontend em `localhost:5173` nao consegue chamar nenhum endpoint.
+
+**Onde:** Todos os servicos (auth, card, deck, community, card-creator, proxy, duel)
+
+**Checklist:**
+- [ ] Adicionar `@Bean WebMvcConfigurer` com CORS em cada servico
+- [ ] Origem permitida: `http://localhost:5173`, `http://localhost:3000`
+- [ ] `allowCredentials = true` para envio de cookies/Authorization header
+- [ ] Se criar Gateway (INFRA-002), configurar CORS apenas nele
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` CONFIG-002 — Sincronizar portas entre servicos e documentacao
+
+**Descricao:** As portas estao inconsistentes entre servicos e docs, impedindo a comunicacao correta.
+
+| Servico | Porta real | Documentado como |
+|---------|-----------|------------------|
+| deck-service | 8081 | 8082 (no duel-service) |
+| proxy-service | 8085 | 8082 (no README) |
+
+**Checklist:**
+- [ ] Corrigir `deck-service.url` para `8081` no `duel-service/application.yml`
+- [ ] Corrigir README do monorepo: proxy-service = 8085
+- [ ] Garantir que todos os servicos usem as mesmas portas de referencia
+
+**Estimativa:** S
+
+---
+
 ### Infraestrutura
 
 ---
@@ -385,7 +423,130 @@ public record RespondChallengeRequest(
 
 ---
 
+---
+
+### Documentacao e Ferramentas
+
+---
+
+#### `[ ]` DOC-001 — Collection Postman global
+
+**Descricao:** Collection Postman/Insomnia com todas as chamadas dos 7 servicos para facilitar testes manuais e onboarding de devs.
+
+**Checklist:**
+- [ ] Criar `docs/api/duel-service.postman_collection.json`
+- [ ] Variaveis de ambiente: `{{auth-api}}`, `{{deck-api}}`, etc.
+- [ ] Requests organizados por servico em pastas
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` DOC-002 — Architecture Decision Records (ADRs)
+
+**Descricao:** Decisoes arquiteturais importantes nao estao registradas (ex: porque Kafka? porque Hexagonal? porque JNI?).
+
+**Checklist:**
+- [ ] Criar diretorio `docs/adr/`
+- [ ] ADR-001: Uso de Kafka para eventos assincronos
+- [ ] ADR-002: Arquitetura Hexagonal (Ports & Adapters)
+- [ ] ADR-003: JNI com ocgcore vs engine Java pura
+- [ ] ADR-004: Redis como state store vs banco relacional
+- [ ] Usar formato Michael Nygard (contexto, decisao, consequencias, status)
+
+**Estimativa:** M
+
+---
+
+### Seguranca
+
+---
+
+#### `[ ]` AUTH-004 — Rate limiting no login
+
+**Descricao:** Sem limite de tentativas de login, ataque de forca bruta e trivial.
+
+**Onde:** `auth-service`
+
+**Checklist:**
+- [ ] Implementar rate limiter por IP no endpoint `POST /auth/login`
+- [ ] 5 tentativas falhas em 1 minuto → bloquear por 5 minutos
+- [ ] Usar `bucket4j` ou implementacao simples com `ConcurrentHashMap<String, List<Instant>>`
+- [ ] Retornar `429 Too Many Requests` com header `Retry-After`
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` AUTH-005 — Verificacao de email
+
+**Descricao:** Usuarios podem se registrar com qualquer email, inclusive invalido. Sem verificacao, contas fantasmas proliferam.
+
+**Checklist:**
+- [ ] Ao registrar, enviar email com link de confirmacao
+- [ ] Adicionar campo `email_verified` (boolean) no `UserEntity`
+- [ ] Endpoint `GET /auth/verify?token=...` que marca como verificado
+- [ ] Opcional: servico de email (SendGrid, Mailgun, ou SMTP)
+
+**Estimativa:** L
+
+---
+
+#### `[ ]` AUTH-006 — Reset de senha
+
+**Checklist:**
+- [ ] `POST /auth/forgot-password` — recebe email, envia token de reset
+- [ ] `POST /auth/reset-password` — recebe token + nova senha
+- [ ] Token de reset expira em 15 minutos
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` SEC-001 — Correlation ID entre servicos
+
+**Descricao:** Sem correlationId, e impossivel rastrear uma requisicao que passa por 3 servicos (ex: frontend → gateway → comunidade → duelo).
+
+**Checklist:**
+- [ ] Adicionar filtro `CorrelationIdFilter` no `shared-domain`
+- [ ] Se header `X-Correlation-Id` existir, propaga-lo; se nao, gerar UUID
+- [ ] Configurar `logging.pattern.level` em todos os servicos para incluir `[%X{correlationId}]`
+- [ ] Propagar via Feign `RequestInterceptor`
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` SEC-002 — Circuit breaker no deck-service para card-service
+
+**Descricao:** Se card-service estiver fora, as chamadas do deck-service ficam pendentes e consomem threads.
+
+**Onde:** `deck-service` — ja tem resilience4j configurado mas `CardFeignClient` pode nao estar usando
+
+**Checklist:**
+- [ ] Verificar se `@CircuitBreaker(name = "cardCatalog")` esta aplicado nas chamadas ao CardFeignClient
+- [ ] Testar fallback: se card-service offline, retornar dados parciais com aviso
+
+**Estimativa:** S
+
+---
+
+### Testes
+
+---
+
 #### `[ ]` TEST-003 — Testes de integracao Kafka (fluxo completo desafio -> duelo -> encerramento)
+
+---
+
+#### `[ ]` TEST-004 — Testes end-to-end com Postman/Newman
+
+**Checklist:**
+- [ ] Fluxo: registrar usuario → login → criar deck → criar duelo → ver historico
+- [ ] Script Newman para CI: `newman run collection.json -e environment.json`
+- [ ] Incluir assertions de status code e body
+
+**Estimativa:** L
 
 **Descricao:** Testar o fluxo completo: criar desafio -> aceitar -> duel-service criar duelo -> duel-service publicar duel.encerrado -> community-service consumir e atualizar status.
 
