@@ -1,13 +1,13 @@
 # Backlog — Yu-Gi-Oh! Deck Management
 
 > Registro vivo do progresso do projeto. Atualizado a cada mudanca de estado de uma funcionalidade.
-> **Ultima atualizacao:** 2026-04-28
+> **Ultima atualizacao:** 2026-07-07
 
 ---
 
 ## Sobre o Projeto
 
-Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com arquitetura hexagonal em microservicos independentes que se comunicam via OpenFeign e Kafka.
+Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construido com arquitetura hexagonal em microservicos independentes que se comunicam via OpenFeign e Kafka.
 
 **Versao atual:** `0.3.0`
 **Repositorio:** [github.com/odevpedro/yu-gi-oh-deck-management](https://github.com/odevpedro/yu-gi-oh-deck-management)
@@ -41,7 +41,13 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 
 ## Pendentes
 
-> Ordenadas por prioridade. Itens de P0 e P1 devem entrar em "Em Andamento" primeiro.
+### FASE 0 — Integracao Critica com duel-service
+
+| ID | Feature | Prioridade | Estimativa |
+|----|---------|------------|------------|
+| INT-001 | **Consumer Kafka `duel.encerrado`** — community-service deve consumir topico e atualizar duelStatus dos jogadores | P0 | M |
+| INT-002 | **Criar duelo ao aceitar desafio** — ChallengeService.accept() deve chamar POST /api/duels no duel-service | P0 | M |
+| INT-003 | **Notificar community-service ao criar duelo** — duel-service deve publicar evento para setar jogadores como IN_DUEL | P1 | S |
 
 ### Autenticacao e Seguranca
 
@@ -59,21 +65,16 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 | CORE-002 | Import de deck via arquivo .ydk | P2 | M |
 | CORE-003 | Sincronizacao de deck via Kafka entre servicos | P2 | L |
 
-### Servicos Planejados
-
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
-| SVCE-001 | konami-validator-service — validacao de balanceamento via regras configuraveis | P2 | XL |
-| SVCE-002 | duel-service (repo separado) — motor de duelo integrado ao ocgcore (C++ + Lua) | P3 | XL |
-
 ### Infraestrutura
 
 | ID | Feature | Prioridade | Estimativa |
 |----|---------|------------|------------|
 | INFRA-001 | Elasticsearch — busca full-text de cartas por descricao de efeito | P2 | L |
-| INFRA-002 | API Gateway com Spring Cloud Gateway | P2 | M |
+| INFRA-002 | **API Gateway com Spring Cloud Gateway** — roteamento unificado para frontend (elimina necessidade de conhecer porta de cada servico) | P2 | M |
 | INFRA-003 | Prometheus + Grafana para metricas | P3 | M |
 | INFRA-004 | Zipkin para distributed tracing | P3 | M |
+| INFRA-005 | **build.gradle raiz vazio** — sem gerenciamento centralizado de versoes entre modulos | P2 | S |
+| INFRA-006 | **docker-compose com servicos da aplicacao** — atualmente so tem infra (DBs + Kafka), sem os Spring Boot services | P3 | L |
 
 ### Testes
 
@@ -81,6 +82,7 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 |----|---------|------------|------------|
 | TEST-001 | Testes unitarios com JUnit | P1 | L |
 | TEST-002 | Testes de integracao com Testcontainers | P2 | L |
+| TEST-003 | **Testes de integracao Kafka** — fluxo desafio -> duelo -> encerramento | P2 | M |
 
 ---
 
@@ -153,6 +155,7 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 
 | ID | Descricao | Severidade | Reportado em |
 |----|-----------|------------|--------------|
+| BUG-007 | Proxy-service roda na porta 8085 mas documentacao do README diz 8082 | Media | 2026-07-07 |
 
 ---
 
@@ -161,9 +164,10 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construdo com 
 > Pontos em aberto que precisam de decisao antes de serem desenvolvidos.
 
 - [ ] Decidir estrategia de sincronizacao entre deck-service e card-service
-- [ ] Definir formato de eventos Kafka entre servicos
+- [x] Definir formato de eventos Kafka entre servicos
 - [ ] Configurar CORS para permitir acesso de origens externas
 - [ ] Implementar rate limiting no API Gateway
+- [ ] Decidir se duel-service sera incorporado como submodulo Gradle ou mantido como repo separado
 
 ---
 
