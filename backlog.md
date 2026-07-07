@@ -26,76 +26,387 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construido com
 | `P1`    | Alta prioridade |
 | `P2`    | Media prioridade |
 | `P3`    | Melhoria / nice-to-have |
-| `XS` `S` `M` `L` `XL` | Estimativa de complexidade |
 
 ---
 
 ## Em Andamento
 
-> Features atualmente sendo desenvolvidas. Idealmente, maximo de 2–3 itens simultaneos.
-
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
+> Nenhuma feature em andamento.
 
 ---
 
 ## Pendentes
 
-### FASE 0 — Integracao Critica com duel-service
+### FASE 0 — Caminho Critico para o Duelo (impede jogar)
 
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
-| INT-001 | **Consumer Kafka `duel.encerrado`** — community-service deve consumir topico e atualizar duelStatus dos jogadores | P0 | M |
-| INT-002 | **Criar duelo ao aceitar desafio** — ChallengeService.accept() deve chamar POST /api/duels no duel-service | P0 | M |
-| INT-003 | **Notificar community-service ao criar duelo** — duel-service deve publicar evento para setar jogadores como IN_DUEL | P1 | S |
+---
+
+#### `[ ]` INT-001 — Consumer Kafka `duel.encerrado` no community-service
+
+**Descricao:** O community-service precisa consumir o topico `duel.encerrado` publicado pelo duel-service para atualizar o `duelStatus` dos jogadores de `IN_DUEL` para `AVAILABLE`. Atualmente o topico e mencionado na documentacao (`docs/system-feature-flows.md`) mas o consumer nunca foi implementado.
+
+**Onde:** `community-service`
+
+**Checklist:**
+- [ ] Adicionar dependencia `spring-kafka` (ja existe no build.gradle)
+- [ ] Configurar Kafka consumer no `application.yml` do community-service:
+  ```yaml
+  spring:
+    kafka:
+      consumer:
+        group-id: community-duel-group
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring.json.trusted.packages: "*"
+        auto-offset-reset: earliest
+  ```
+- [ ] Criar DTO do evento recebido:
+  ```java
+  public record DuelEncerradoEvent(
+      String duelId,
+      String winnerId,
+      String loserId,
+      String playerAId,
+      String playerBId,
+      Integer turnCount,
+      LocalDateTime finishedAt
+  ) {}
+  ```
+- [ ] Criar classe `DuelEncerradoConsumer`:
+  ```java
+  @Component
+  public class DuelEncerradoConsumer {
+      private final PlayerRepositoryPort playerRepository;
+      private final PlayerService playerService;
+
+      @KafkaListener(topics = "duel.encerrado", groupId = "community-duel-group")
+      public void consume(DuelEncerradoEvent event) {
+          playerService.updateStatus(UUID.fromString(event.playerAId()), DuelStatus.AVAILABLE);
+          playerService.updateStatus(UUID.fromString(event.playerBId()), DuelStatus.AVAILABLE);
+      }
+  }
+  ```
+- [ ] Tratar erros: se Kafka estiver indisponivel, logar warning e tentar novamente
+- [ ] Testar com Testcontainers Kafka (ou manualmente publicando no topico)
+
+**Criterio de aceitacao:** Quando um evento `duel.encerrado` e publicado no Kafka, ambos os jogadores tem `duelStatus` alterado para `AVAILABLE`.
+
+**Depende de:** GAME-004 no duel-service
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` INT-002 — ChallengeService.accept() deve criar duelo no duel-service
+
+**Descricao:** Quando um jogador aceita um desafio (`ChallengeService.accept()`), o sistema so atualiza o status do desafio para `ACCEPTED` e marca os jogadores como `IN_DUEL`. Falta chamar o duel-service para criar o duelo de fato.
+
+**Fluxo desejado:**
+1. Jogador A aceita desafio de Jogador B
+2. `ChallengeServiceImpl.accept()` atualiza status e duelStatus
+3. Community-service chama `POST /api/duels` no duel-service via Feign
+4. Duelo e criado e retorna `duelId`
+5. Community-service notifica os jogadores (via Kafka ou WebSocket) com o `duelId` para que conectem
+
+**Onde:** `ChallengeServiceImpl.accept()`
+
+**Checklist:**
+- [ ] Criar `DuelFeignClient` no community-service:
+  ```java
+  @FeignClient(name = "duel-service", url = "${duel-service.url:http://localhost:8084}")
+  public interface DuelFeignClient {
+      @PostMapping("/api/duels")
+      DuelResponseDTO createDuel(@RequestBody CreateDuelRequestDTO request);
+  }
+  ```
+- [ ] Criar DTOs:
+  ```java
+  public record CreateDuelRequestDTO(String playerAId, String playerBId,
+                                      Long playerADeckId, Long playerBDeckId) {}
+  public record DuelResponseDTO(String duelId, String playerAId, String playerBId,
+                                 String currentPhase, String status,
+                                 int turnNumber, String activePlayerId) {}
+  ```
+- [ ] No `ChallengeServiceImpl.accept()`:
+  ```java
+  // Apos atualizar status do desafio
+  DuelResponseDTO duel = duelFeignClient.createDuel(
+      new CreateDuelRequestDTO(
+          challenge.challengerId().toString(),
+          challenge.targetId().toString(),
+          challenge.challengerDeckId(),
+          targetDeckId // precisa vir do accept request
+      )
+  );
+  ```
+- [ ] Ajustar `RespondChallengeRequest` para incluir `targetDeckId` (Long)
+- [ ] Publicar evento `duel.iniciado` no Kafka ou mensagem WebSocket com `duelId` para os jogadores
+- [ ] Configurar `duel-service.url` no `application.yml` do community-service:
+  ```yaml
+  duel-service:
+    url: ${DUEL_SERVICE_URL:http://localhost:8084}
+  ```
+
+**Criterio de aceitacao:** Ao aceitar um desafio, um duelo e criado no duel-service e o `duelId` e retornado na resposta.
+
+**Depende de:** BUG-002, BUG-003, BUG-004 do duel-service (para o duel-service estar funcional)
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` INT-003 — Adicionar targetDeckId no fluxo de aceite de desafio
+
+**Descricao:** Atualmente `ChallengeController` recebe `RespondChallengeRequest` com apenas `ChallengeAction (ACCEPT/DECLINE)`. Para criar o duelo, precisamos tambem do `deckId` que o jogador alvo (quem aceita) usara.
+
+**Checklist:**
+- [ ] Adicionar campo `targetDeckId` (Long) no `RespondChallengeRequest`
+- [ ] Validar que `targetDeckId` nao e null quando action = ACCEPT
+- [ ] Passar `targetDeckId` para o `ChallengeService.accept()`
+- [ ] Atualizar `ChallengeServiceImpl.accept()` para aceitar `targetDeckId`
+- [ ] Passar `targetDeckId` para o `DuelFeignClient.createDuel()`
+
+**DTO resultante:**
+```java
+public record RespondChallengeRequest(
+    @NotNull ChallengeAction action,
+    Long targetDeckId  // obrigatorio quando action = ACCEPT
+) {}
+```
+
+**Criterio de aceitacao:** Aceitar desafio sem `targetDeckId` retorna erro de validacao 400.
+
+**Estimativa:** S
+
+---
 
 ### Autenticacao e Seguranca
 
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
-| AUTH-001 | Autenticacao centralizada com JWT e refresh token | P1 | L |
-| AUTH-002 | Logout e revogacao de tokens | P2 | M |
-| AUTH-003 | Filtro JWT compartilhado via shared-domain com blacklist | P1 | M |
+---
+
+#### `[ ]` AUTH-001 — Autenticacao centralizada com JWT e refresh token
+
+**Status:** Implementado em auth-service (ver Concluidas).
+
+---
+
+#### `[ ]` AUTH-002 — Logout e revogacao de tokens
+
+**Status:** Implementado (ver Concluidas).
+
+---
+
+#### `[ ]` AUTH-003 — Filtro JWT compartilhado via shared-domain com blacklist
+
+**Status:** Implementado (ver Concluidas).
+
+---
 
 ### Core Features
 
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
-| CORE-001 | Validacao de regras de deck (40-60 main, max 15 extra/side, max 3 copias) | P1 | M |
-| CORE-002 | Import de deck via arquivo .ydk | P2 | M |
-| CORE-003 | Sincronizacao de deck via Kafka entre servicos | P2 | L |
+---
+
+#### `[ ]` CORE-001 — Validacao de regras de deck (40-60 main, max 15 extra/side, max 3 copias)
+
+**Status:** Implementado em deck-service (ver Concluidas).
+
+---
+
+#### `[ ]` CORE-002 — Import de deck via arquivo .ydk
+
+**Descricao:** Usuario deve poder importar um deck a partir de um arquivo .ydk (formato padrao do YGOPro/DuelingBook).
+
+**Checklist:**
+- [ ] Criar endpoint `POST /decks/import` que aceita multipart file
+- [ ] Parsing do .ydk:
+  - Linhas com `#main` delimitam main deck
+  - Linhas com `#extra` delimitam extra deck
+  - Linhas com `!side` delimitam side deck
+  - Cada linha e um cardId numerico
+- [ ] Validar cartas contra card-service (verificar se existem)
+- [ ] Aplicar `DeckValidator.validateDeck()` apos import
+- [ ] Retornar `DeckView` com resultados da validacao
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` CORE-003 — Sincronizacao de deck via Kafka entre servicos
+
+**Descricao:** Quando um deck e modificado no deck-service, publicar evento no Kafka para que outros servicos (ex: community-service, duel-service) possam reagir.
+
+**Estimativa:** L
+
+---
 
 ### Infraestrutura
 
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
-| INFRA-001 | Elasticsearch — busca full-text de cartas por descricao de efeito | P2 | L |
-| INFRA-002 | **API Gateway com Spring Cloud Gateway** — roteamento unificado para frontend (elimina necessidade de conhecer porta de cada servico) | P2 | M |
-| INFRA-003 | Prometheus + Grafana para metricas | P3 | M |
-| INFRA-004 | Zipkin para distributed tracing | P3 | M |
-| INFRA-005 | **build.gradle raiz vazio** — sem gerenciamento centralizado de versoes entre modulos | P2 | S |
-| INFRA-006 | **docker-compose com servicos da aplicacao** — atualmente so tem infra (DBs + Kafka), sem os Spring Boot services | P3 | L |
+---
+
+#### `[ ]` INFRA-001 — Elasticsearch
+
+**Descricao:** Busca full-text de cartas por descricao de efeito, indexando dados do YGOPRODeck.
+
+**Estimativa:** L
+
+---
+
+#### `[ ]` INFRA-002 — API Gateway com Spring Cloud Gateway
+
+**Descricao:** Criar um API Gateway que roteie requisicoes do frontend para o servico correto com base no path, eliminando a necessidade do frontend conhecer a porta de cada servico.
+
+**Por que e importante para o jogo:** O frontend hoje precisaria saber 6 portas diferentes (8080-8087). Um Gateway unifica tudo em uma unica URL.
+
+**Checklist:**
+- [ ] Criar modulo `gateway-service` no monorepo
+- [ ] Configurar Spring Cloud Gateway com rotas:
+  ```yaml
+  spring:
+    cloud:
+      gateway:
+        routes:
+          - id: auth-service
+            uri: http://localhost:8086
+            predicates:
+              - Path=/auth/**
+          - id: deck-service
+            uri: http://localhost:8081
+            predicates:
+              - Path=/decks/**
+          - id: card-service
+            uri: http://localhost:8080
+            predicates:
+              - Path=/cards/**
+          - id: community-service
+            uri: http://localhost:8087
+            predicates:
+              - Path=/players/**, /challenges/**
+          - id: duel-service
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/duels/**
+          - id: card-creator-service
+            uri: http://localhost:8083
+            predicates:
+              - Path=/custom-cards/**
+          - id: proxy-service
+            uri: http://localhost:8085
+            predicates:
+              - Path=/proxy/**
+  ```
+- [ ] Adicionar CORS configurado para a URL do frontend
+- [ ] Configurar rate limiting basico
+
+**Criterio de aceitacao:** Frontend faz todas as chamadas para `http://gateway:8080/` e e roteado para o servico correto.
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` INFRA-003 — Prometheus + Grafana
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` INFRA-004 — Zipkin
+
+**Estimativa:** M
+
+---
+
+#### `[ ]` INFRA-005 — build.gradle raiz com gerenciamento centralizado de versoes
+
+**Descricao:** O `build.gradle` raiz esta vazio. Cada submodulo declara suas proprias versoes do Spring Boot e dependencias, causando inconsistencia.
+
+**Checklist:**
+- [ ] Centralizar versoes no `build.gradle` raiz:
+  ```groovy
+  subprojects {
+      apply plugin: 'java'
+      group = 'com.odevpedro'
+      version = '0.3.0'
+      repositories { mavenCentral() }
+  }
+  ```
+- [ ] Extrair versoes para `ext` ou `gradle.properties`
+
+**Estimativa:** S
+
+---
+
+#### `[ ]` INFRA-006 — docker-compose com servicos da aplicacao
+
+**Descricao:** Atualmente o `docker-compose.yml` so sobe infra (DBs + Kafka). Adicionar os servicos Spring Boot para facilitar deploy local completo.
+
+**Checklist:**
+- [ ] Adicionar servicos no docker-compose.yml:
+  ```yaml
+  auth-service:
+    build: ./auth-service
+    ports: ["8086:8086"]
+    depends_on: [auth-db]
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/authdb
+  ```
+- [ ] Repetir para cada servico
+- [ ] Configurar network unificada
+
+**Estimativa:** L
+
+---
 
 ### Testes
 
-| ID | Feature | Prioridade | Estimativa |
-|----|---------|------------|------------|
-| TEST-001 | Testes unitarios com JUnit | P1 | L |
-| TEST-002 | Testes de integracao com Testcontainers | P2 | L |
-| TEST-003 | **Testes de integracao Kafka** — fluxo desafio -> duelo -> encerramento | P2 | M |
+---
+
+#### `[ ]` TEST-001 — Testes unitarios com JUnit
+
+**Checklist:**
+- [ ] auth-service: `JwtServiceTest`, `AuthServiceTest`
+- [ ] deck-service: `DeckValidatorTest`, `DeckExportServiceTest`
+- [ ] community-service: `ChallengeServiceTest`, `PlayerServiceTest`
+- [ ] card-service: `SearchCardsUseCaseTest`
+- [ ] card-creator-service: `CustomCardServiceTest`
+
+**Estimativa:** L
+
+---
+
+#### `[ ]` TEST-002 — Testes de integracao com Testcontainers
+
+**Checklist:**
+- [ ] PostgreSQL: repositorios JPA
+- [ ] Kafka: fluxo de eventos (card.created, duel.encerrado)
+- [ ] Feign: mocks de servicos externos
+
+**Estimativa:** L
+
+---
+
+#### `[ ]` TEST-003 — Testes de integracao Kafka (fluxo completo desafio -> duelo -> encerramento)
+
+**Descricao:** Testar o fluxo completo: criar desafio -> aceitar -> duel-service criar duelo -> duel-service publicar duel.encerrado -> community-service consumir e atualizar status.
+
+**Checklist:**
+- [ ] Usar Testcontainers com Kafka + PostgreSQL
+- [ ] Mockar DuelFeignClient
+- [ ] Publicar evento `duel.encerrado` manualmente
+- [ ] Verificar que `Player.duelStatus` foi alterado para AVAILABLE
+
+**Estimativa:** M
 
 ---
 
 ## Concluidas
-
-> Features finalizadas com suas respectivas datas de conclusao e links de referencia.
 
 ### Arquitetura
 
 | ID | Feature | Data | Referencia |
 |----|---------|------|------------|
 | ARCH-001 | Arquitetura Hexagonal (Ports & Adapters) | 2024 | hex-arch |
-| ARCH-002 | Centralizacao de rotas em ApiRoutes | 2026-04-28 | - |
+| ARCH-002 | Centralizacao de rotas em ApiRoutes | 2026-04-28 | shared-domain |
 | ARCH-003 | Filtro JWT compartilhado via shared-domain com blacklist | 2026-04-28 | JwtAuthFilter |
 
 ### Features de Autenticacao
@@ -103,7 +414,7 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construido com
 | ID | Feature | Data | Referencia |
 |----|---------|------|------------|
 | AUTH-001 | JWT com access token e refresh token | 2026-04-28 | JwtService, RefreshTokenService |
-| AUTH-002 | Logout com blacklist de tokens | 2026-04-28 | TokenBlacklistService, TokenValidationController |
+| AUTH-002 | Logout com blacklist de tokens | 2026-04-28 | TokenBlacklistService |
 | AUTH-003 | Validacao de token via Feign (blacklist check) | 2026-04-28 | TokenValidationClient, JwtAuthFilter |
 
 ### Servicos Implementados
@@ -126,7 +437,7 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construido com
 | DECK-002 | Adicionar/remover cartas do deck | 2024 | DeckController |
 | DECK-003 | Export de deck no formato .ydk | 2024 | DeckExportService |
 | DECK-004 | Busca de cartas via YGOPRODeck API | 2024 | CardController |
-| DECK-005 | Validacao de regras de deck Yu-Gi-Oh! | 2026-04-28 | DeckValidator, DeckApplicationService |
+| DECK-005 | Validacao de regras de deck Yu-Gi-Oh! | 2026-04-28 | DeckValidator |
 | DECK-006 | Retorno de validacao no endpoint /decks/{id}/full | 2026-04-28 | DeckView |
 
 ### Features de Cards Customizados
@@ -136,7 +447,7 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construido com
 | CARD-001 | Criacao de cartas customizadas | 2024 | CustomCardController |
 | CARD-002 | Validacao de stats (ATK/DEF 0-5000, Level 1-12) | 2024 | CustomCard domain |
 | CARD-003 | Validacao de texto (nome max 255, efeito max 2000) | 2024 | CustomCard domain |
-| CARD-004 | Publicacao de eventos via Kafka (card.created) | 2024 | KafkaProducer |
+| CARD-004 | Publicacao de eventos via Kafka (card.created) | 2024 | Kafka producer |
 
 ### Features de Comunidade
 
@@ -151,23 +462,25 @@ Sistema de gerenciamento de colecoes e decks de cartas Yu-Gi-Oh!, construido com
 
 ## Bugs Conhecidos
 
-> Problemas identificados que ainda nao foram corrigidos.
-
 | ID | Descricao | Severidade | Reportado em |
 |----|-----------|------------|--------------|
 | BUG-007 | Proxy-service roda na porta 8085 mas documentacao do README diz 8082 | Media | 2026-07-07 |
+| BUG-008 | GlobalExceptionHandler vazio em auth-service e card-creator-service (arquivos existem mas sem conteudo) | Media | 2026-07-07 |
+| BUG-009 | CardResponseDTO em deck-service parece dead code (nao usado por nenhum servico) | Baixa | 2026-07-07 |
+| BUG-010 | duel-service aponta deck-service.url para 8082, mas deck-service real roda na 8081 | Media | 2026-07-07 |
+| BUG-011 | Proxy-service roda na 8085 mas README documenta como 8082 — documentacao inconsistente | Media | 2026-07-07 |
 
 ---
 
 ## Notas e Decisoes Pendentes
-
-> Pontos em aberto que precisam de decisao antes de serem desenvolvidos.
 
 - [ ] Decidir estrategia de sincronizacao entre deck-service e card-service
 - [x] Definir formato de eventos Kafka entre servicos
 - [ ] Configurar CORS para permitir acesso de origens externas
 - [ ] Implementar rate limiting no API Gateway
 - [ ] Decidir se duel-service sera incorporado como submodulo Gradle ou mantido como repo separado
+- [ ] Definir versao unificada do Spring Cloud BOM para todos os modulos
+- [ ] Sincronizar portas entre servicos: duel-service aponta deck-service na 8082, mas deck-service real na 8081; proxy-service na 8085 mas docs dizem 8082
 
 ---
 
