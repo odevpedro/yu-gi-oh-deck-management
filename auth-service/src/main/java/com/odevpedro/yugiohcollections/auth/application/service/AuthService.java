@@ -90,16 +90,3 @@ public class AuthService {
         }
     }
 }
-
-    public AuthResponse login(LoginRequest request) {
-        UserEntity user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
-
-        if (!passwordEncoder.matches(request.password(), user.getPassword()))
-            throw new BadCredentialsException("Credenciais inválidas");
-
-        String token = jwtService.generateToken(user.getId(), user.getUsername(), user.getRole());
-
-        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getId());
-    }
-}

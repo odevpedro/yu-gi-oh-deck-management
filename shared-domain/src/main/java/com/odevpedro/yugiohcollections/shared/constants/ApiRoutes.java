@@ -8,20 +8,20 @@ public final class ApiRoutes {
 
     // Auth
     public static final String AUTH_BASE = "/auth";
-    public static final String AUTH_REGISTER = AUTH_BASE + "/register";
-    public static final String AUTH_LOGIN = AUTH_BASE + "/login";
-    public static final String AUTH_ME = AUTH_BASE + "/me";
+    public static final String AUTH_REGISTER = "/register";
+    public static final String AUTH_LOGIN = "/login";
+    public static final String AUTH_ME = "/me";
 
     // Decks
     public static final String DECKS_BASE = "/decks";
-    public static final String DECKS_BY_ID = DECKS_BASE + ID;
-    public static final String DECKS_FULL = "/decks/{deckId}/full";
-    public static final String DECKS_CARDS = "/decks/{deckId}/cards";
-    public static final String DECKS_EXPORT = "/decks/{deckId}/export";
+    public static final String DECKS_BY_ID = "/{deckId}";
+    public static final String DECKS_FULL = "/{deckId}/full";
+    public static final String DECKS_CARDS = "/{deckId}/cards";
+    public static final String DECKS_EXPORT = "/{deckId}/export";
 
     // Custom Cards
     public static final String CUSTOM_CARDS_BASE = "/custom-cards";
-    public static final String CUSTOM_CARDS_BY_ID = CUSTOM_CARDS_BASE + ID;
+    public static final String CUSTOM_CARDS_BY_ID = ID;
 
     // Cards
     public static final String CARDS_BASE = "/cards";
@@ -30,15 +30,15 @@ public final class ApiRoutes {
 
     // Players
     public static final String PLAYERS_BASE = "/players";
-    public static final String PLAYERS_ME_STATUS = PLAYERS_BASE + "/me/status";
-    public static final String PLAYERS_NEARBY = PLAYERS_BASE + "/nearby";
+    public static final String PLAYERS_ME_STATUS = "/me/status";
+    public static final String PLAYERS_NEARBY = "/nearby";
 
     // Challenges
     public static final String CHALLENGES_BASE = "/challenges";
-    public static final String CHALLENGES_BY_ID = CHALLENGES_BASE + ID;
-    public static final String CHALLENGES_PENDING = CHALLENGES_BASE + "/pending";
+    public static final String CHALLENGES_BY_ID = ID;
+    public static final String CHALLENGES_PENDING = "/pending";
 
     // Proxy
     public static final String PROXY_BASE = "/proxy";
-    public static final String PROXY_BY_ID = PROXY_BASE + ID;
+    public static final String PROXY_BY_ID = ID;
 }

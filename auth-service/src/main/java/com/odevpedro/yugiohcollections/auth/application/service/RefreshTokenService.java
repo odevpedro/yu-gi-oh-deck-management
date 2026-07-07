@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class RefreshTokenService {
         RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
                 .token(tokenValue)
                 .user(user)
-                .expiresAt(LocalDateTime.now().plusMillis(jwtProperties.getRefreshExpirationMs()))
+                .expiresAt(LocalDateTime.now().plus(jwtProperties.getRefreshExpirationMs(), ChronoUnit.MILLIS))
                 .revoked(false)
                 .build();
 

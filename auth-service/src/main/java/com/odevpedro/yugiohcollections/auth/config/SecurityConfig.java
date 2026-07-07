@@ -26,8 +26,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                ApiRoutes.AUTH_REGISTER,
-                                ApiRoutes.AUTH_LOGIN,
+                                ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_REGISTER,
+                                ApiRoutes.AUTH_BASE + ApiRoutes.AUTH_LOGIN,
                                 "/auth/refresh",
                                 "/internal/**",
                                 "/actuator/**"

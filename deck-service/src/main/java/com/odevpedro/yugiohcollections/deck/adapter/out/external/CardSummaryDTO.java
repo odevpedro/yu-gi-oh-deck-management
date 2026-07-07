@@ -10,9 +10,12 @@ import lombok.Setter;
 @Setter
 public class CardSummaryDTO{
     private Long cardId;
-    String name;
-    String type;
-    String imageUrl;
-    String description;
-    Integer quantity;
+    private String name;
+    private String type;
+    private String imageUrl;
+    private String description;
+    private Integer atk;
+    private Integer def;
+    private Integer level;
+    private Integer quantity;
 }

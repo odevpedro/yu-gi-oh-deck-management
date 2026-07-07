@@ -115,6 +115,9 @@ public class DeckApplicationServiceImpl implements DeckApplicationService {
                             .type(c.getType())
                             .imageUrl(c.getImageUrl())
                             .description(c.getDescription())
+                            .atk(c.getAtk())
+                            .def(c.getDef())
+                            .level(c.getLevel())
                             .quantity(cardCounts.getOrDefault(c.getCardId(), 1L).intValue())
                             .build())
                     .toList();

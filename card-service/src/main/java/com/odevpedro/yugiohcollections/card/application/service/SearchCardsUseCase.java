@@ -3,6 +3,7 @@ package com.odevpedro.yugiohcollections.card.application.service;
 import com.odevpedro.yugiohcollections.card.adapter.out.dto.CardResponseDTO;
 import com.odevpedro.yugiohcollections.card.application.dto.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
+import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.shared.enums.CardType;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
 
@@ -56,13 +57,7 @@ public class SearchCardsUseCase {
     public List<CardSummaryDTO> searchByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) return List.of();
         return externalQueryPort.findByIds(ids).stream()
-                .map(c -> new CardSummaryDTO(
-                        c.getId(),
-                        c.getName(),
-                        c.getType().name(),
-                        c.getImageUrl(),
-                        c.getDescription()
-                ))
+                .map(CardSummaryDTO::from)
                 .toList();
     }
 

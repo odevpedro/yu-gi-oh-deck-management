@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@FeignClient(name = "card-service", url = "http://localhost:8080")
+@FeignClient(name = "card-service", url = "${card-service.url:http://localhost:8080}")
 public interface CardFeignClient {
 
-    @GetMapping("/internal/cards")
+    @GetMapping("/cards/internal")
     List<CardSummaryDTO> findCardsByIds(@RequestParam("ids") List<Long> ids);
 }

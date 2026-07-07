@@ -43,6 +43,9 @@ public class DeckView {
                         .type(c.getType())
                         .imageUrl(c.getImageUrl())
                         .description(c.getDescription())
+                        .atk(c.getAtk())
+                        .def(c.getDef())
+                        .level(c.getLevel())
                         .quantity(idCountMap.getOrDefault(c.getCardId(), 1L).intValue())
                         .build()
                 )
@@ -86,6 +89,9 @@ public class DeckView {
                 .type(info != null ? info.getType() : null)
                 .imageUrl(info != null ? info.getImageUrl() : null)
                 .description(info != null ? info.getDescription() : null)
+                .atk(info != null ? info.getAtk() : null)
+                .def(info != null ? info.getDef() : null)
+                .level(info != null ? info.getLevel() : null)
                 .build();
     }
 
@@ -107,59 +113,6 @@ public class DeckView {
                 .sideDeckSize(side)
                 .isValid(true)
                 .validationErrors(List.of())
-                .build();
-    }
-}
-
-        List<CardSummaryDTO> normalized = enrichedCards.stream()
-                .map(c -> CardSummaryDTO.builder()
-                        .cardId(c.getCardId())
-                        .name(c.getName())
-                        .type(c.getType())
-                        .imageUrl(c.getImageUrl())
-                        .description(c.getDescription())
-                        .quantity(idCountMap.getOrDefault(c.getCardId(), 1L).intValue())
-                        .build()
-                )
-                .toList();
-
-        int total = deck.allCardIds().size();
-
-        return DeckView.builder()
-                .id(deck.getId())
-                .ownerId(deck.getOwnerId())
-                .name(deck.getName())
-                .cards(normalized)
-                .totalCards(total)
-                .notes(null)
-                .build();
-    }
-
-
-    private static CardSummaryDTO mergeEntryWithCardInfo(DeckCardEntryEntity entry, CardSummaryDTO info) {
-        return CardSummaryDTO.builder()
-                .cardId(entry.getCardId())
-                .quantity(entry.getQuantity())
-                .name(info != null ? info.getName() : null)
-                .type(info != null ? info.getType() : null)
-                .imageUrl(info != null ? info.getImageUrl() : null)
-                .description(info != null ? info.getDescription() : null)
-                .build();
-    }
-
-    public static DeckView simple(Deck deck) {
-        int main = deck.getMainDeck() != null ? deck.getMainDeck().size() : 0;
-        int extra = deck.getExtraDeck() != null ? deck.getExtraDeck().size() : 0;
-        int side = deck.getSideDeck() != null ? deck.getSideDeck().size() : 0;
-        int total = main + extra + side;
-
-        return DeckView.builder()
-                .id(deck.getId())
-                .ownerId(deck.getOwnerId())
-                .name(deck.getName())
-                .cards(List.of())
-                .totalCards(total)
-                .notes(null)
                 .build();
     }
 }

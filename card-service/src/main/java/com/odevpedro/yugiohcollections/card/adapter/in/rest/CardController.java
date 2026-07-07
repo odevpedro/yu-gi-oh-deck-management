@@ -4,6 +4,7 @@ import com.odevpedro.yugiohcollections.card.adapter.out.dto.CardResponseDTO;
 import com.odevpedro.yugiohcollections.card.application.dto.CardSummaryDTO;
 import com.odevpedro.yugiohcollections.card.application.service.SearchCardsUseCase;
 import com.odevpedro.yugiohcollections.card.domain.model.Card;
+import com.odevpedro.yugiohcollections.card.domain.model.MonsterCard;
 import com.odevpedro.yugiohcollections.card.domain.model.ports.ExternalCardQueryPort;
 import com.odevpedro.yugiohcollections.shared.constants.ApiRoutes;
 import lombok.RequiredArgsConstructor;
@@ -50,12 +51,25 @@ public class CardController {
     }
 
     private CardSummaryDTO toSummary(Card c) {
+        Integer atk = null;
+        Integer def = null;
+        Integer level = null;
+
+        if (c instanceof MonsterCard monster) {
+            atk = monster.getAttack();
+            def = monster.getDefense();
+            level = monster.getLevel();
+        }
+
         return new CardSummaryDTO(
                 c.getId(),
                 c.getName(),
                 c.getType() != null ? c.getType().name() : null,
                 c.getImageUrl(),
-                c.getDescription()
+                c.getDescription(),
+                atk,
+                def,
+                level
         );
     }
 }
