@@ -23,6 +23,7 @@ public class DeckEntity {
     @Column(nullable = false)
     private String name;
 
+    @Builder.Default
     @OneToMany(mappedBy = "deck", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeckCardEntryEntity> entries = new ArrayList<>();
 
@@ -35,5 +36,5 @@ public class DeckEntity {
     public void removeEntry(DeckCardEntryEntity entry) {
         this.entries.remove(entry);
         entry.setDeck(null);
-}
+    }
 }

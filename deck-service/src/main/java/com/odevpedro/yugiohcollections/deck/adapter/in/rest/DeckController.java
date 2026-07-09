@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -57,6 +58,13 @@ public class DeckController {
         String userId = (String) auth.getDetails();
         DeckZone zone = body.zone() != null ? DeckZone.valueOf(body.zone().toUpperCase()) : DeckZone.MAIN;
         return DeckView.simple(service.addCardToZone(userId, deckId, body.cardId(), body.quantity(), zone));
+    }
+
+    @PostMapping(ApiRoutes.DECKS_IMPORT)
+    public DeckView importDeck(Authentication auth,
+                               @RequestParam("file") MultipartFile file) {
+        String userId = (String) auth.getDetails();
+        return service.importDeck(userId, file);
     }
 
     @DeleteMapping(ApiRoutes.DECKS_CARDS)

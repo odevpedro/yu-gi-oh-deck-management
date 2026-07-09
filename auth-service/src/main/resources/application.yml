@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: auth-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
 
   datasource:
     url: jdbc:postgresql://localhost:5435/authdb
@@ -26,3 +29,7 @@ jwt:
   expiration-ms: 3600000 # 1 hora
   refresh-expiration-ms: 604800000 # 7 dias
   skip-blacklist-check: true
+
+logging:
+  pattern:
+    level: "%5p [cid=%X{correlationId}]"

@@ -9,11 +9,13 @@ public interface ChallengeService {
 
     Challenge sendChallenge(UUID challengerId, UUID targetId, Long challengerDeckId, String message);
 
-    Challenge accept(UUID challengeId, UUID targetId);
+    AcceptedChallenge accept(UUID challengeId, UUID targetId, Long targetDeckId);
 
     Challenge decline(UUID challengeId, UUID targetId);
 
     List<Challenge> findPending(UUID targetId);
 
     void expireStale();
+
+    record AcceptedChallenge(Challenge challenge, String duelId) {}
 }

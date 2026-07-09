@@ -1,6 +1,8 @@
 package com.odevpedro.yugiohcollections.community.application.service.Impl;
 
 import com.odevpedro.yugiohcollections.community.application.service.ChallengeService;
+import com.odevpedro.yugiohcollections.community.adapter.out.external.CreateDuelRequestDTO;
+import com.odevpedro.yugiohcollections.community.adapter.out.external.DuelFeignClient;
 import com.odevpedro.yugiohcollections.community.adapter.out.messaging.ChallengeEventPublisher;
 import com.odevpedro.yugiohcollections.community.domain.model.Challenge;
 import com.odevpedro.yugiohcollections.community.domain.model.ChallengeStatus;
@@ -23,6 +25,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeRepositoryPort challengeRepository;
     private final PlayerRepositoryPort playerRepository;
     private final ChallengeEventPublisher eventPublisher;
+    private final DuelFeignClient duelFeignClient;
 
     @Override
     public Challenge sendChallenge(UUID challengerId, UUID targetId, Long challengerDeckId, String message) {
@@ -39,7 +42,7 @@ public class ChallengeServiceImpl implements ChallengeService {
     }
 
     @Override
-    public Challenge accept(UUID challengeId, UUID targetId) {
+    public ChallengeService.AcceptedChallenge accept(UUID challengeId, UUID targetId, Long targetDeckId) {
         var challenge = findAndValidate(challengeId, targetId);
 
         challengeRepository.updateStatus(challengeId, ChallengeStatus.ACCEPTED);
@@ -47,7 +50,17 @@ public class ChallengeServiceImpl implements ChallengeService {
         playerRepository.updateStatus(targetId, DuelStatus.IN_DUEL);
         eventPublisher.publishChallengeAccepted(challenge);
 
-        return challengeRepository.findById(challengeId).orElseThrow();
+        var duel = duelFeignClient.createDuel(new CreateDuelRequestDTO(
+                challenge.getChallengerId().toString(),
+                challenge.getTargetId().toString(),
+                challenge.getChallengerDeckId(),
+                targetDeckId
+        ));
+
+        return new ChallengeService.AcceptedChallenge(
+                challengeRepository.findById(challengeId).orElseThrow(),
+                duel.duelId()
+        );
     }
 
     @Override

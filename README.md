@@ -221,13 +221,13 @@ Todas as rotas sao centralizadas em `ApiRoutes` (shared-domain).
 | GET | `/custom-cards/{id}` | Consulta carta e status de validacao | Bearer |
 | GET | `/custom-cards` | Lista cartas do usuario | Bearer |
 
-### proxy-service (8082)
+### proxy-service (8085)
 
 | Metodo | Rota | Descricao | Auth |
 |--------|------|-----------|------|
 | GET | `/proxy/{deckId}` | Gera PDF com imagens das cartas para impressao | Bearer |
 
-### community-service (8085)
+### community-service (8087)
 
 | Metodo | Rota | Descricao | Auth |
 |--------|------|-----------|------|
@@ -315,7 +315,7 @@ graph TB
         DeckSvc --> DeckFeign
     end
 
-    subgraph PROXY["proxy-service :8082"]
+    subgraph PROXY["proxy-service :8085"]
         ProxyCtrl["GET /proxy/{deckId}"]
         ProxyPDF["PDF Generator: OpenPDF"]
         ProxyFeign["DeckFeignClient"]
@@ -337,7 +337,7 @@ graph TB
         CreatorSub --> CreatorDB
     end
 
-    subgraph COMMUNITY["community-service :8085"]
+    subgraph COMMUNITY["community-service :8087"]
         CommCtrl["POST /players · PATCH /players/me/status · GET /players/nearby · POST /challenges · PATCH /challenges/{id}"]
         CommJWT["JwtAuthFilter: extrai userId"]
         CommSvc["PlayerService + ChallengeService"]

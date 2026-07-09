@@ -1,13 +1,18 @@
 package com.odevpedro.yugiohcollections.creator;
 
+import com.odevpedro.yugiohcollections.shared.config.CorrelationIdConfiguration;
 import com.odevpedro.yugiohcollections.shared.config.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
-@EnableConfigurationProperties(JwtProperties.class)
 @SpringBootApplication
+@EnableConfigurationProperties(JwtProperties.class)
+@EnableFeignClients(basePackages = "com.odevpedro.yugiohcollections.shared.security")
+@Import(CorrelationIdConfiguration.class)
 @ComponentScan(basePackages = {
         "com.odevpedro.yugiohcollections.creator",
         "com.odevpedro.yugiohcollections.shared"

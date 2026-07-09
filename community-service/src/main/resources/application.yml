@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: community-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
 
   datasource:
     url: jdbc:postgresql://localhost:5436/communitydb
@@ -24,6 +27,13 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: community-duel-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -32,7 +42,14 @@ auth:
   service:
     url: http://localhost:8086
 
+duel-service:
+  url: ${DUEL_SERVICE_URL:http://localhost:8084}
+
 jwt:
   secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
   expiration-ms: 3600000
   skip-blacklist-check: false
+
+logging:
+  pattern:
+    level: "%5p [cid=%X{correlationId}]"

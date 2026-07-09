@@ -17,6 +17,7 @@ public final class ApiRoutes {
     public static final String DECKS_BY_ID = "/{deckId}";
     public static final String DECKS_FULL = "/{deckId}/full";
     public static final String DECKS_CARDS = "/{deckId}/cards";
+    public static final String DECKS_IMPORT = "/import";
     public static final String DECKS_EXPORT = "/{deckId}/export";
 
     // Custom Cards

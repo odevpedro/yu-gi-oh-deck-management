@@ -31,7 +31,7 @@ O ecossistema é composto por 3 projetos principais:
 │                                                                             │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐          │
 │  │  auth-service   │  │  deck-service   │  │ card-service    │          │
-│  │  :8081          │  │  :8082           │  │ :8083           │          │
+│  │  :8086          │  │  :8081           │  │ :8080           │          │
 │  └────────┬─────────┘  └────────┬─────────┘  └──────────────────┘          │
 │           │                     │                                            │
 │           │    OpenFeign       │                                            │
@@ -39,7 +39,7 @@ O ecossistema é composto por 3 projetos principais:
 │                     │                                                       │
 │           ┌─────────▼──────────┐                                            │
 │           │ community-service  │ ───▶ PostgreSQL + PostGIS               │
-│           │ :8080              │                                            │
+│           │ :8087              │                                            │
 │           └─────────┬──────────┘                                            │
 │                     │                                                       │
 └─────────────────────│───────────────────────────────────────────────────────┘
@@ -229,7 +229,7 @@ docker-compose up -d
 ```bash
 cd duel-service
 
-# Development (in-memory + stub)
+# Development (Redis + ocgcore JNI, com fallback Stub)
 ./gradlew bootRun
 
 # Production (Redis)
@@ -259,13 +259,13 @@ npm run dev
 | `REDIS_HOST` | localhost | Host do Redis |
 | `REDIS_PORT` | 6379 | Porta do Redis |
 | `JWT_SECRET` | - | Chave secreta para JWT |
-| `DECK_SERVICE_URL` | http://localhost:8082 | URL do deck-service |
+| `DECK_SERVICE_URL` | http://localhost:8081 | URL do deck-service |
 
 ### deck-service
 
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
-| `SERVER_PORT` | 8082 | Porta do serviço |
+| `SERVER_PORT` | 8081 | Porta do serviço |
 | `DATABASE_URL` | - | URL do PostgreSQL |
 
 ---
@@ -295,33 +295,25 @@ npm run dev
 - [x] Ativação de magias/armadilhas
 - [x] Visualizador de deck
 - [x] Painel de contexto (hover)
-- [ ] IA do oponente (P0)
-- [ ] Error boundaries (P1)
-- [ ] WebSocket (implementar WebSocketEngine)
+- [x] IA do oponente basica
+- [x] Error boundaries
+- [x] WebSocketEngine remoto via STOMP
 
 ---
 
 ## Integração Frontend ↔ Duel Service
 
-O frontend já tem arquitetura de adapter preparada:
+O frontend ja possui arquitetura de adapter com `LocalEngine` e `WebSocketEngine`:
 
 ```javascript
 // engine/index.js
 import { LocalEngine } from './LocalEngine'
-// Para WebSocket, importar WebSocketEngine
 import { WebSocketEngine } from './WebSocketEngine'
 
-export const engine = new LocalEngine() //目前的
-// export const engine = new WebSocketEngine() // futuro
+export const engine = new LocalEngine()
 ```
 
-Para completar a integração:
-
-1. Criar `WebSocketEngine` implementando `DuelEngineAdapter`
-2. Conectar ao WebSocket com JWT
-3. Enviar ações via STOMP
-4. Receber estado via `/topic/duel/{id}`
-5. Substituir `LocalEngine` por `WebSocketEngine` em `index.js`
+O modo online conecta ao duel-service com JWT, envia acoes via STOMP e recebe estado por `/topic/duel/{id}`.
 
 ---
 

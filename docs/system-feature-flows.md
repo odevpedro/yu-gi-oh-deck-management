@@ -47,9 +47,9 @@ HTTP Request
 |---------|-------|-----------------|
 | card-service | 8080 | Consulta ao catalogo de cartas via YGOPRODeck API com cache |
 | deck-service | 8081 | Criacao e composicao de decks com export/import .ydk |
-| proxy-service | 8082 | Geracao de PDFs de cartas para impressao de proxies |
+| proxy-service | 8085 | Geracao de PDFs de cartas para impressao de proxies |
 | card-creator-service | 8083 | Criacao de cartas customizadas com validacao assincrona |
-| community-service | 8085 | Geolocalizacao de jogadores e sistema de desafio de duelo |
+| community-service | 8087 | Geolocalizacao de jogadores e sistema de desafio de duelo |
 | auth-service | 8086 | Autenticacao e emissao de JWT |
 | shared-domain | — | Biblioteca interna com enums e filtro JWT compartilhados |
 

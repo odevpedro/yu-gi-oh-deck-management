@@ -1,23 +1,31 @@
 package com.odevpedro.yugiohcollections.deck.adapter.out.external;
 
-import com.odevpedro.yugiohcollections.deck.adapter.out.persistence.entity.DeckCardEntryEntity;
-import com.odevpedro.yugiohcollections.deck.adapter.out.persistence.entity.DeckEntity;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
-import com.odevpedro.yugiohcollections.deck.domain.model.DeckZone;
 import com.odevpedro.yugiohcollections.deck.domain.service.DeckValidator;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DeckView {
 
     private Long id;
     private String ownerId;
     private String name;
     private List<CardSummaryDTO> cards;
+    private List<CardSummaryDTO> mainDeckCards;
+    private List<CardSummaryDTO> extraDeckCards;
+    private List<CardSummaryDTO> sideDeckCards;
     private int totalCards;
     private String notes;
 
@@ -28,28 +36,18 @@ public class DeckView {
     private boolean isValid;
     private List<String> validationErrors;
 
-    public static DeckView from(Deck deck, List<CardSummaryDTO> enrichedCards) {
-        if (enrichedCards == null) enrichedCards = List.of();
-
-        Map<Long, Long> idCountMap = new HashMap<>();
-        for (Long id : deck.allCardIds()) {
-            idCountMap.merge(id, 1L, Long::sum);
+    public static DeckView from(Deck deck, Map<Long, CardSummaryDTO> cardInfoById) {
+        if (cardInfoById == null) {
+            cardInfoById = Map.of();
         }
 
-        List<CardSummaryDTO> normalized = enrichedCards.stream()
-                .map(c -> CardSummaryDTO.builder()
-                        .cardId(c.getCardId())
-                        .name(c.getName())
-                        .type(c.getType())
-                        .imageUrl(c.getImageUrl())
-                        .description(c.getDescription())
-                        .atk(c.getAtk())
-                        .def(c.getDef())
-                        .level(c.getLevel())
-                        .quantity(idCountMap.getOrDefault(c.getCardId(), 1L).intValue())
-                        .build()
-                )
-                .toList();
+        List<CardSummaryDTO> mainCards = expandZone(deck.getMainDeck(), cardInfoById);
+        List<CardSummaryDTO> extraCards = expandZone(deck.getExtraDeck(), cardInfoById);
+        List<CardSummaryDTO> sideCards = expandZone(deck.getSideDeck(), cardInfoById);
+        List<CardSummaryDTO> normalized = new ArrayList<>();
+        normalized.addAll(mainCards);
+        normalized.addAll(extraCards);
+        normalized.addAll(sideCards);
 
         int mainDeckSize = deck.getMainDeck() != null ? deck.getMainDeck().size() : 0;
         int extraDeckSize = deck.getExtraDeck() != null ? deck.getExtraDeck().size() : 0;
@@ -61,6 +59,9 @@ public class DeckView {
                 .ownerId(deck.getOwnerId())
                 .name(deck.getName())
                 .cards(normalized)
+                .mainDeckCards(mainCards)
+                .extraDeckCards(extraCards)
+                .sideDeckCards(sideCards)
                 .totalCards(total)
                 .notes(null)
                 .mainDeckSize(mainDeckSize)
@@ -81,20 +82,6 @@ public class DeckView {
         }
     }
 
-    private static CardSummaryDTO mergeEntryWithCardInfo(DeckCardEntryEntity entry, CardSummaryDTO info) {
-        return CardSummaryDTO.builder()
-                .cardId(entry.getCardId())
-                .quantity(entry.getQuantity())
-                .name(info != null ? info.getName() : null)
-                .type(info != null ? info.getType() : null)
-                .imageUrl(info != null ? info.getImageUrl() : null)
-                .description(info != null ? info.getDescription() : null)
-                .atk(info != null ? info.getAtk() : null)
-                .def(info != null ? info.getDef() : null)
-                .level(info != null ? info.getLevel() : null)
-                .build();
-    }
-
     public static DeckView simple(Deck deck) {
         int main = deck.getMainDeck() != null ? deck.getMainDeck().size() : 0;
         int extra = deck.getExtraDeck() != null ? deck.getExtraDeck().size() : 0;
@@ -106,6 +93,9 @@ public class DeckView {
                 .ownerId(deck.getOwnerId())
                 .name(deck.getName())
                 .cards(List.of())
+                .mainDeckCards(List.of())
+                .extraDeckCards(List.of())
+                .sideDeckCards(List.of())
                 .totalCards(total)
                 .notes(null)
                 .mainDeckSize(main)
@@ -114,5 +104,28 @@ public class DeckView {
                 .isValid(true)
                 .validationErrors(List.of())
                 .build();
+    }
+
+    private static List<CardSummaryDTO> expandZone(List<Long> ids, Map<Long, CardSummaryDTO> cardInfoById) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        List<CardSummaryDTO> zoneCards = new ArrayList<>();
+        for (Long id : ids) {
+            CardSummaryDTO info = cardInfoById.get(id);
+            zoneCards.add(CardSummaryDTO.builder()
+                    .cardId(id)
+                    .name(info != null ? info.getName() : null)
+                    .type(info != null ? info.getType() : null)
+                    .imageUrl(info != null ? info.getImageUrl() : null)
+                    .description(info != null ? info.getDescription() : null)
+                    .atk(info != null ? info.getAtk() : null)
+                    .def(info != null ? info.getDef() : null)
+                    .level(info != null ? info.getLevel() : null)
+                    .quantity(1)
+                    .build());
+        }
+        return zoneCards;
     }
 }

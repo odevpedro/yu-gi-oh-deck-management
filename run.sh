@@ -58,8 +58,9 @@ start_services() {
         "card-service:8080"
         "deck-service:8081"
         "card-creator-service:8083"
-        "proxy-service:8082"
-        "community-service:8085"
+        "proxy-service:8085"
+        "community-service:8087"
+        "gateway-service:8088"
     )
 
     for service in "${services[@]}"; do
@@ -81,11 +82,15 @@ start_services() {
 wait_for_services() {
     echo_step "Aguardando servicos ficarem prontos..."
 
-    for service in auth-service card-service deck-service; do
+    for service in auth-service card-service deck-service card-creator-service proxy-service community-service gateway-service; do
         port=$(case $service in
             auth-service) echo 8086 ;;
             card-service) echo 8080 ;;
             deck-service) echo 8081 ;;
+            card-creator-service) echo 8083 ;;
+            proxy-service) echo 8085 ;;
+            community-service) echo 8087 ;;
+            gateway-service) echo 8088 ;;
         esac)
 
         echo_info "Aguardando $service (porta $port)..."
@@ -113,8 +118,9 @@ show_status() {
         "card-service:8080"
         "deck-service:8081"
         "card-creator-service:8083"
-        "proxy-service:8082"
-        "community-service:8085"
+        "proxy-service:8085"
+        "community-service:8087"
+        "gateway-service:8088"
     )
 
     for service in "${services[@]}"; do

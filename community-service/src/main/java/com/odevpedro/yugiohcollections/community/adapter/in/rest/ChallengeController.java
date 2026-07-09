@@ -27,13 +27,19 @@ public class ChallengeController {
     }
 
     @PatchMapping(ApiRoutes.CHALLENGES_BY_ID)
-    public ResponseEntity<Challenge> respond(Authentication auth,
-                                             @PathVariable UUID challengeId,
-                                             @RequestBody RespondChallengeRequest body) {
+    public ResponseEntity<RespondChallengeResponse> respond(Authentication auth,
+                                                            @PathVariable UUID challengeId,
+                                                            @RequestBody RespondChallengeRequest body) {
         UUID targetId = UUID.fromString((String) auth.getDetails());
         return switch (body.action()) {
-            case ACCEPT  -> ResponseEntity.ok(challengeService.accept(challengeId, targetId));
-            case DECLINE -> ResponseEntity.ok(challengeService.decline(challengeId, targetId));
+            case ACCEPT -> {
+                if (body.targetDeckId() == null) {
+                    throw new IllegalArgumentException("targetDeckId is required when action is ACCEPT");
+                }
+                var accepted = challengeService.accept(challengeId, targetId, body.targetDeckId());
+                yield ResponseEntity.ok(new RespondChallengeResponse(accepted.challenge(), accepted.duelId()));
+            }
+            case DECLINE -> ResponseEntity.ok(new RespondChallengeResponse(challengeService.decline(challengeId, targetId), null));
         };
     }
 
@@ -44,6 +50,7 @@ public class ChallengeController {
     }
 
     public record SendChallengeRequest(UUID targetId, Long challengerDeckId, String message) {}
-    public record RespondChallengeRequest(ChallengeAction action) {}
+    public record RespondChallengeRequest(ChallengeAction action, Long targetDeckId) {}
+    public record RespondChallengeResponse(Challenge challenge, String duelId) {}
     public enum ChallengeAction { ACCEPT, DECLINE }
 }

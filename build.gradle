@@ -1,0 +1,23 @@
+ext {
+    springBootVersion = '3.1.9'
+    springDependencyManagementVersion = '1.1.4'
+    springCloudVersion = '2022.0.5'
+    springCloudOpenFeignVersion = '4.1.0'
+    springBootStarterVersion = '3.2.0'
+    jjwtVersion = '0.11.5'
+    lombokVersion = '1.18.30'
+    testcontainersVersion = '1.19.3'
+    caffeineVersion = '3.1.8'
+    resilience4jVersion = '2.2.0'
+    openpdfVersion = '1.3.30'
+    hibernateSpatialVersion = '6.2.13.Final'
+}
+
+subprojects {
+    group = 'com.odevpedro'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}

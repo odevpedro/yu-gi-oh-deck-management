@@ -1,4 +1,7 @@
 spring:
+  cloud:
+    compatibility-verifier:
+      enabled: false
   cache:
     type: caffeine
 
@@ -36,3 +39,7 @@ feign:
 jwt:
   secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
   expiration-ms: 3600000 # 1 hora
+
+logging:
+  pattern:
+    level: "%5p [cid=%X{correlationId}]"

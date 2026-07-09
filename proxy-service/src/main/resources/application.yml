@@ -4,15 +4,25 @@ server:
 spring:
   application:
     name: proxy-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
 
 deck-service:
-  url: localhost:8081
+  url: ${DECK_SERVICE_URL:http://localhost:8081}
+
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:http://localhost:8086}
 
 logging:
   level:
     root: INFO
+  pattern:
+    level: "%5p [cid=%X{correlationId}]"
 
 
 jwt:
   secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
   expiration-ms: 3600000 # 1 hora
+  refresh-expiration-ms: 604800000 # 7 dias

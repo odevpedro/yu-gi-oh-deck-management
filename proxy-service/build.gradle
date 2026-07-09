@@ -17,8 +17,9 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'com.github.librepdf:openpdf:1.3.30'
+    implementation "com.github.librepdf:openpdf:${rootProject.ext.openpdfVersion}"
     implementation project(':shared-domain')
 
     compileOnly 'org.projectlombok:lombok'
@@ -29,7 +30,7 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2022.0.4"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${rootProject.ext.springCloudVersion}"
     }
 }
 

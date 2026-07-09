@@ -19,7 +19,7 @@ public class ProxyController {
     private final ProxyPdfService proxyPdfService;
 
     @GetMapping(ApiRoutes.PROXY_BY_ID)
-    public ResponseEntity<byte[]> generateProxy(@PathVariable Long deckId) {
+    public ResponseEntity<byte[]> generateProxy(@PathVariable("id") Long deckId) {
         byte[] pdf = proxyPdfService.generateProxyPdf(deckId);
 
         return ResponseEntity.ok()

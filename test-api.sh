@@ -32,7 +32,7 @@ request() {
     local token=$4
     local extra=$5
 
-    local curl_cmd="curl -s -X $method '$url'"
+    local curl_cmd="curl -s --connect-timeout 3 --max-time 60 -X $method '$url'"
 
     if [ -n "$data" ]; then
         curl_cmd="$curl_cmd -H 'Content-Type: application/json'"
@@ -52,17 +52,19 @@ request() {
 
 wait_for_service() {
     local port=$1
+    local status=""
     echo_info "Aguardando servico na porta $port..."
 
-    for i in {1..30}; do
-        if curl -s "http://localhost:$port/actuator/health" > /dev/null 2>&1; then
+    for i in {1..90}; do
+        status=$(curl -s --connect-timeout 1 --max-time 3 -o /dev/null -w '%{http_code}' "http://localhost:$port/actuator/health" 2>/dev/null || true)
+        if [ "$status" != "000" ]; then
             echo_info "Servico na porta $port esta pronto!"
             return 0
         fi
         sleep 1
     done
 
-    echo -e "${RED}[ERRO]${NC} Servico na porta $port nao ficou pronto."
+    echo -e "${RED}[ERRO]${NC} Servico na porta $port nao ficou pronto. Ultimo status: $status"
     return 1
 }
 
@@ -75,8 +77,8 @@ wait_for_service 8086
 wait_for_service 8080
 wait_for_service 8081
 wait_for_service 8083
-wait_for_service 8082
 wait_for_service 8085
+wait_for_service 8087
 
 echo_step "2. Registrando novo usuario..."
 RESULT=$(request "POST" "${BASE_URL}:8086/auth/register" '{
@@ -113,6 +115,11 @@ echo "..."
 CARD_ID=$(echo "$RESULT" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
 echo_info "Card ID encontrado: $CARD_ID"
 
+if [ -z "$CARD_ID" ]; then
+    echo -e "${RED}[ERRO]${NC} Nenhuma carta encontrada no card-service."
+    exit 1
+fi
+
 echo_step "5. Criando um deck..."
 RESULT=$(request "POST" "${BASE_URL}:8081/decks" '{"name": "Deck de Teste"}' "$ACCESS_TOKEN")
 echo_result
@@ -120,6 +127,11 @@ echo "$RESULT"
 
 DECK_ID=$(echo "$RESULT" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
 echo_info "Deck ID: $DECK_ID"
+
+if [ -z "$DECK_ID" ]; then
+    echo -e "${RED}[ERRO]${NC} Falha ao criar deck."
+    exit 1
+fi
 
 echo_step "6. Listando decks do usuario..."
 RESULT=$(request "GET" "${BASE_URL}:8081/decks" "" "$ACCESS_TOKEN")
@@ -150,13 +162,13 @@ echo "..."
 echo_step "10. Criando carta customizada..."
 RESULT=$(request "POST" "${BASE_URL}:8083/custom-cards" '{
     "name": "Dragão Tester Customizado",
-    "type": "MONSTER",
+    "cardType": "MONSTER",
     "attribute": "LIGHT",
-    "race": "Dragon",
+    "monsterType": "Dragon",
     "level": 8,
-    "atk": 3000,
-    "def": 2500,
-    "description": "卡 test card with special effects"
+    "attack": 3000,
+    "defense": 2500,
+    "description": "Carta de teste com efeitos especiais"
 }' "$ACCESS_TOKEN")
 echo_result
 echo "$RESULT"
@@ -164,21 +176,30 @@ echo "$RESULT"
 CUSTOM_CARD_ID=$(echo "$RESULT" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
 echo_info "Custom Card ID: $CUSTOM_CARD_ID"
 
+if [ -z "$CUSTOM_CARD_ID" ]; then
+    echo -e "${RED}[ERRO]${NC} Falha ao criar carta customizada."
+    exit 1
+fi
+
 echo_step "11. Listando cartas customizadas..."
 RESULT=$(request "GET" "${BASE_URL}:8083/custom-cards" "" "$ACCESS_TOKEN")
 echo_result
 echo "$RESULT"
 
 echo_step "12. Gerando PDF proxy do deck..."
-RESULT=$(request "GET" "${BASE_URL}:8082/proxy/${DECK_ID}" "" "$ACCESS_TOKEN" "-o /tmp/proxy_test.pdf -w '%{http_code}'")
+RESULT=$(request "GET" "${BASE_URL}:8085/proxy/${DECK_ID}" "" "$ACCESS_TOKEN" "-o /tmp/proxy_test.pdf -w '%{http_code}'")
 echo_result
+if [ "$RESULT" != "200" ] || [ ! -s "/tmp/proxy_test.pdf" ]; then
+    echo -e "${RED}[ERRO]${NC} Falha ao gerar PDF proxy. HTTP status: $RESULT"
+    exit 1
+fi
 if [ -f "/tmp/proxy_test.pdf" ]; then
     echo_info "PDF gerado com sucesso: /tmp/proxy_test.pdf"
     ls -lh /tmp/proxy_test.pdf
 fi
 
 echo_step "13. Registrando perfil de jogador..."
-RESULT=$(request "POST" "${BASE_URL}:8085/players" '{
+RESULT=$(request "POST" "${BASE_URL}:8087/players" '{
     "displayName": "TestPlayer",
     "latitude": -23.5505,
     "longitude": -46.6333,
@@ -188,12 +209,12 @@ echo_result
 echo "$RESULT"
 
 echo_step "14. Atualizando status do jogador..."
-RESULT=$(request "PATCH" "${BASE_URL}:8085/players/me/status" '{"status": "AVAILABLE"}' "$ACCESS_TOKEN")
+RESULT=$(request "PATCH" "${BASE_URL}:8087/players/me/status" '{"status": "AVAILABLE"}' "$ACCESS_TOKEN")
 echo_result
 echo "Status atualizado (204 No Content esperado)"
 
 echo_step "15. Buscando jogadores proximos..."
-RESULT=$(request "GET" "${BASE_URL}:8085/players/nearby?lat=-23.5505&lng=-46.6333&radiusKm=100" "" "$ACCESS_TOKEN")
+RESULT=$(request "GET" "${BASE_URL}:8087/players/nearby?lat=-23.5505&lng=-46.6333&radiusKm=100" "" "$ACCESS_TOKEN")
 echo_result
 echo "$RESULT"
 
@@ -207,6 +228,9 @@ NEW_REFRESH_TOKEN=$(echo "$RESULT" | grep -o '"refreshToken":"[^"]*"' | cut -d'"
 
 if [ -n "$NEW_ACCESS_TOKEN" ]; then
     echo_info "Token renovado com sucesso!"
+else
+    echo -e "${RED}[ERRO]${NC} Falha ao renovar token."
+    exit 1
 fi
 
 echo_step "17. Removendo carta do deck..."

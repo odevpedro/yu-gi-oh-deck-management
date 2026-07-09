@@ -3,6 +3,7 @@ package com.odevpedro.yugiohcollections.deck.application.service;
 import com.odevpedro.yugiohcollections.deck.adapter.out.external.DeckView;
 import com.odevpedro.yugiohcollections.deck.domain.model.Deck;
 import com.odevpedro.yugiohcollections.deck.domain.model.DeckZone;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,5 +15,6 @@ public interface DeckApplicationService {
     Deck addCardToZone(String ownerId, Long deckId, Long cardId, int quantity, DeckZone zone);
     Deck removeCard(String ownerId, Long deckId, Long cardId, String zone);
     DeckView getDeckWithCards(String ownerId, Long deckId);
+    DeckView importDeck(String ownerId, MultipartFile file);
     void deleteDeck(String ownerId, Long deckId);
 }

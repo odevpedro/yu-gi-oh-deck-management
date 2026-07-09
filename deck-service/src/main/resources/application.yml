@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: deck-service
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+  kafka:
+    bootstrap-servers: localhost:9092
 
   datasource:
     url: jdbc:postgresql://localhost:5433/deckdb
@@ -46,3 +52,11 @@ jwt:
   secret: ${JWT_SECRET:yugioh-deck-management-super-secret-key-256bits-minimum}
   expiration-ms: 3600000
   skip-blacklist-check: false
+
+logging:
+  pattern:
+    level: "%5p [cid=%X{correlationId}]"
+
+kafka:
+  topics:
+    deck-synced: deck.synced
